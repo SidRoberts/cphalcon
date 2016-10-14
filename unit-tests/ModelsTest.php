@@ -149,6 +149,10 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 
 		$modelsManager = $di->getShared('modelsManager');
 
+		$childsRepository = $modelsManager->getRepository(
+			Childs::class
+		);
+
 		$child = new Childs();
 		$child->for = '1';
 		$modelsManager->create($child);
@@ -157,8 +161,8 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$child->group = '1';
 		$modelsManager->create($child);
 
-		$children = Childs::findByFor(1);
-		$children = Childs::findByGroup(1);
+		$children = $childsRepository->findByFor(1);
+		$children = $childsRepository->findByGroup(1);
 	}
 
 	protected function issue1534($di)

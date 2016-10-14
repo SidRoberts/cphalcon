@@ -1929,110 +1929,6 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 	}
 
 	/**
-	 * Try to check if the query must invoke a finder
-	 *
-	 * @param  string method
-	 * @param  array arguments
-	 * @return \Phalcon\Mvc\ModelInterface[]|\Phalcon\Mvc\ModelInterface|boolean
-	 */
-	protected final static function _invokeFinder(method, arguments)
-	{
-		var extraMethod, type, modelName, value, model,
-			attributes, field, extraMethodFirst, metaData,
-			dependencyInjector, manager, repository;
-
-		let extraMethod = null;
-
-		/**
-		 * Check if the method starts with "findFirst"
-		 */
-		if starts_with(method, "findFirstBy") {
-			let type = "findFirst",
-				extraMethod = substr(method, 11);
-		}
-
-		/**
-		 * Check if the method starts with "find"
-		 */
-		elseif starts_with(method, "findBy") {
-			let type = "find",
-				extraMethod = substr(method, 6);
-		}
-
-		/**
-		 * Check if the method starts with "count"
-		 */
-		elseif starts_with(method, "countBy") {
-			let type = "count",
-				extraMethod = substr(method, 7);
-		}
-
-		/**
-		 * The called class is the model
-		 */
-		let modelName = get_called_class();
-
-		if !extraMethod {
-			return null;
-		}
-
-		if !fetch value, arguments[0] {
-			throw new Exception("The static method '" . method . "' requires one argument");
-		}
-
-		let model = new {modelName}(),
-			metaData = model->getModelsMetaData();
-
-		/**
-		 * Get the attributes
-		 */
-		let attributes = metaData->getReverseColumnMap(model);
-		if typeof attributes != "array" {
-			let attributes = metaData->getDataTypes(model);
-		}
-
-		/**
-		 * Check if the extra-method is an attribute
-		 */
-		if isset attributes[extraMethod] {
-			let field = extraMethod;
-		} else {
-
-			/**
-			 * Lowercase the first letter of the extra-method
-			 */
-			let extraMethodFirst = lcfirst(extraMethod);
-			if isset attributes[extraMethodFirst] {
-				let field = extraMethodFirst;
-			} else {
-
-				/**
-				 * Get the possible real method name
-				 */
-				let field = uncamelize(extraMethod);
-				if !isset attributes[field] {
-					throw new Exception("Cannot resolve attribute '" . extraMethod . "' in the model");
-				}
-			}
-		}
-
-		let dependencyInjector = Di::getDefault();
-		let manager = <ManagerInterface> dependencyInjector->getShared("modelsManager");
-
-		let repository = manager->getRepository(modelName);
-
-		/**
-		 * Execute the query
-		 */
-		return repository->{type}(
-			[
-				"conditions": "[" . field . "] = ?0",
-				"bind":       [value]
-			]
-		);
-	}
-
-	/**
 	 * Handles method calls when a method is not implemented
 	 *
 	 * @param	string method
@@ -2042,11 +1938,6 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 	public function __call(string method, arguments)
 	{
 		var modelName, status, records;
-
-		let records = self::_invokeFinder(method, arguments);
-		if records !== null {
-			return records;
-		}
 
 		let modelName = get_class(this);
 
@@ -2070,25 +1961,6 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 		 * The method doesn't exist throw an exception
 		 */
 		throw new Exception("The method '" . method . "' doesn't exist on model '" . modelName . "'");
-	}
-
-	/**
-	 * Handles method calls when a static method is not implemented
-	 *
-	 * @param	string method
-	 * @param	array arguments
-	 * @return	mixed
-	 */
-	public static function __callStatic(string method, arguments)
-	{
-		var records;
-
-		let records = self::_invokeFinder(method, arguments);
-		if records === null {
-			throw new Exception("The static method '" . method . "' doesn't exist");
-		}
-
-		return records;
 	}
 
 	/**
