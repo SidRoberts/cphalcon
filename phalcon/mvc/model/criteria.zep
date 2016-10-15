@@ -35,7 +35,11 @@ use Phalcon\Mvc\Model\ResultsetInterface;
  * using an object-oriented interface.
  *
  * <code>
- * $robots = Robots::query()
+ * $robotsRepository = $modelsManager->getRepository(
+ *     Robots::class
+ * );
+ *
+ * $robots = $robotsRepository->query()
  *     ->where("type = :type:")
  *     ->andWhere("year < 2000")
  *     ->bind(["type" => "mechanical"])

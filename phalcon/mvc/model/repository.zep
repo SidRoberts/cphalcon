@@ -20,6 +20,8 @@
 namespace Phalcon\Mvc\Model;
 
 use Phalcon\Mvc\ModelInterface;
+use Phalcon\Di;
+use Phalcon\DiInterface;
 
 /**
  * Phalcon\Mvc\Model\Repository
@@ -474,7 +476,36 @@ class Repository implements RepositoryInterface
 	}
 
 	/**
-	 * Handles method calls when a static method is not implemented
+	 * Create a criteria for a specific model
+	 */
+	public function query(<DiInterface> dependencyInjector = null) -> <CriteriaInterface>
+	{
+		var criteria;
+
+		/**
+		 * Use the global dependency injector if there is no one defined
+		 */
+		if typeof dependencyInjector != "object" {
+			let dependencyInjector = Di::getDefault();
+		}
+
+		/**
+		 * Gets Criteria instance from DI container
+		 */
+		if dependencyInjector instanceof DiInterface {
+			let criteria = <CriteriaInterface> dependencyInjector->get("Phalcon\\Mvc\\Model\\Criteria");
+		} else {
+			let criteria = new Criteria();
+			criteria->setDI(dependencyInjector);
+		}
+
+		criteria->setModelName(this->_modelClass);
+
+		return criteria;
+	}
+
+	/**
+	 * Handles method calls when a method is not implemented
 	 */
 	public function __call(string method, array arguments)
 	{

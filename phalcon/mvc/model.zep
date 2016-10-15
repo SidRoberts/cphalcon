@@ -756,35 +756,6 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 	}
 
 	/**
-	 * Create a criteria for a specific model
-	 */
-	public static function query(<DiInterface> dependencyInjector = null) -> <Criteria>
-	{
-		var criteria;
-
-		/**
-		 * Use the global dependency injector if there is no one defined
-		 */
-		if typeof dependencyInjector != "object" {
-			let dependencyInjector = Di::getDefault();
-		}
-
-		/**
-		 * Gets Criteria instance from DI container
-		 */
-		if dependencyInjector instanceof DiInterface {
-			let criteria = <CriteriaInterface> dependencyInjector->get("Phalcon\\Mvc\\Model\\Criteria");
-		} else {
-			let criteria = new Criteria();
-			criteria->setDI(dependencyInjector);
-		}
-
-		criteria->setModelName(get_called_class());
-
-		return criteria;
-	}
-
-	/**
 	 * Checks whether the current record already exists
 	 *
 	 * @param \Phalcon\Mvc\Model\MetaDataInterface metaData

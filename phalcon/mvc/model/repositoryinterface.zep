@@ -19,6 +19,7 @@
 
 namespace Phalcon\Mvc\Model;
 
+use Phalcon\DiInterface;
 use Phalcon\Mvc\ModelInterface;
 
 interface RepositoryInterface
@@ -263,4 +264,9 @@ interface RepositoryInterface
 	 * @return double
 	 */
 	public function average(array parameters = []);
+
+	/**
+	 * Create a criteria for a specific model
+	 */
+	public function query(<DiInterface> dependencyInjector = null) -> <CriteriaInterface>;
 }

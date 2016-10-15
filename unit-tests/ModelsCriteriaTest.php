@@ -122,7 +122,16 @@ class ModelsCriteriaTest extends PHPUnit_Framework_TestCase
 
 	public function testHavingNotOverwritingGroupBy()
 	{
-		$query = Personas::query()->groupBy('estado')->having('SUM(cupo) > 1000000');
+
+		$di = $this->_getDI();
+
+        $modelsManager = $di->get("modelsManager");
+
+        $personasRepository = $modelsManager->getRepository(
+            Personas::class
+        );
+
+		$query = $personasRepository->query()->groupBy('estado')->having('SUM(cupo) > 1000000');
 
 		$this->assertEquals('estado', $query->getGroupBy());
 		$this->assertEquals('SUM(cupo) > 1000000', $query->getHaving());
@@ -130,8 +139,13 @@ class ModelsCriteriaTest extends PHPUnit_Framework_TestCase
 
 	protected function _executeTestsNormal($di)
 	{
+        $modelsManager = $di->get("modelsManager");
 
-		$personas = Personas::query()->where("estado='I'")->execute();
+        $personasRepository = $modelsManager->getRepository(
+            Personas::class
+        );
+
+		$personas = $personasRepository->query()->where("estado='I'")->execute();
 
 		$peopleRepository = $di->get("modelsManager")->getRepository(
 			People::class
@@ -145,7 +159,7 @@ class ModelsCriteriaTest extends PHPUnit_Framework_TestCase
 
 		$this->assertEquals(count($personas), count($people));
 
-		$personas = Personas::query()->conditions("estado='I'")->execute();
+		$personas = $personasRepository->query()->conditions("estado='I'")->execute();
 
 		$people = $peopleRepository->find(
 			[
@@ -155,7 +169,7 @@ class ModelsCriteriaTest extends PHPUnit_Framework_TestCase
 
 		$this->assertEquals(count($personas), count($people));
 
-		$personas = Personas::query()
+		$personas = $personasRepository->query()
 			->where("estado='A'")
 			->orderBy("nombres")
 			->execute();
@@ -174,7 +188,7 @@ class ModelsCriteriaTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals($somePersona->cedula, $somePeople->cedula);
 
 		//Order + limit
-		$personas = Personas::query()
+		$personas = $personasRepository->query()
 			->where("estado='A'")
 			->orderBy("nombres")
 			->limit(100)
@@ -195,7 +209,7 @@ class ModelsCriteriaTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals($somePersona->cedula, $somePeople->cedula);
 
 		//Bind params + Limit
-		$personas = Personas::query()
+		$personas = $personasRepository->query()
 			->where("estado=?1")
 			->bind(array(1 => "A"))
 			->orderBy("nombres")
@@ -218,7 +232,7 @@ class ModelsCriteriaTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals($somePersona->cedula, $somePeople->cedula);
 
 		//Limit + Offset
-		$personas = Personas::query()
+		$personas = $personasRepository->query()
 			->where("estado=?1")
 			->bind(array(1 => "A"))
 			->orderBy("nombres")
@@ -240,7 +254,7 @@ class ModelsCriteriaTest extends PHPUnit_Framework_TestCase
 		$somePeople = $people->getFirst();
 		$this->assertEquals($somePersona->cedula, $somePeople->cedula);
 
-		$personas = Personas::query()
+		$personas = $personasRepository->query()
 			->where("estado=:estado:")
 			->bind(array("estado" => "A"))
 			->orderBy("nombres")
@@ -262,7 +276,7 @@ class ModelsCriteriaTest extends PHPUnit_Framework_TestCase
 		$somePeople = $people->getFirst();
 		$this->assertEquals($somePersona->cedula, $somePeople->cedula);
 
-		$personas = Personas::query()
+		$personas = $personasRepository->query()
 			->orderBy("nombres");
 
 		$this->assertEquals($personas->getOrderBy(), "nombres");
@@ -270,20 +284,25 @@ class ModelsCriteriaTest extends PHPUnit_Framework_TestCase
 
 	protected function _executeTestsRenamed($di)
 	{
+        $modelsManager = $di->get("modelsManager");
 
-		$personers = Personers::query()
+        $personersRepository = $modelsManager->getRepository(
+            Personers::class
+        );
+
+		$personers = $personersRepository->query()
 			->where("status='I'")
 			->execute();
 		$this->assertTrue(is_object($personers));
 		$this->assertEquals(get_class($personers), 'Phalcon\Mvc\Model\Resultset\Simple');
 
-		$personers = Personers::query()
+		$personers = $personersRepository->query()
 			->conditions("status='I'")
 			->execute();
 		$this->assertTrue(is_object($personers));
 		$this->assertEquals(get_class($personers), 'Phalcon\Mvc\Model\Resultset\Simple');
 
-		$personers = Personers::query()
+		$personers = $personersRepository->query()
 			->where("status='A'")
 			->orderBy("navnes")
 			->execute();
@@ -294,7 +313,7 @@ class ModelsCriteriaTest extends PHPUnit_Framework_TestCase
 		$this->assertTrue(is_object($somePersoner));
 		$this->assertEquals(get_class($somePersoner), 'Personers');
 
-		$personers  = Personers::query()
+		$personers  = $personersRepository->query()
 			->where("status='A'")
 			->orderBy("navnes")
 			->limit(100)
@@ -306,7 +325,7 @@ class ModelsCriteriaTest extends PHPUnit_Framework_TestCase
 		$this->assertTrue(is_object($somePersoner));
 		$this->assertEquals(get_class($somePersoner), 'Personers');
 
-		$personers = Personers::query()
+		$personers = $personersRepository->query()
 			->where("status=?1")
 			->bind(array(1 => "A"))
 			->orderBy("navnes")
@@ -319,7 +338,7 @@ class ModelsCriteriaTest extends PHPUnit_Framework_TestCase
 		$this->assertTrue(is_object($somePersoner));
 		$this->assertEquals(get_class($somePersoner), 'Personers');
 
-		$personers = Personers::query()
+		$personers = $personersRepository->query()
 			->where("status=:status:")
 			->bind(array("status" => "A"))
 			->orderBy("navnes")
@@ -391,10 +410,14 @@ class ModelsCriteriaTest extends PHPUnit_Framework_TestCase
 			return $modelsCache;
 		}, true);
 
-		$personas = Personas::query()->where("estado='I'")->cache(array("key" => "cache-2131"))->execute();
+		$personasRepository = $di->get("modelsManager")->getRepository(
+			Personas::class
+		);
+
+		$personas = $personasRepository->query()->where("estado='I'")->cache(array("key" => "cache-2131"))->execute();
 		$this->assertTrue($personas->isFresh());
 
-		$personas = Personas::query()->where("estado='I'")->cache(array("key" => "cache-2131"))->execute();
+		$personas = $personasRepository->query()->where("estado='I'")->cache(array("key" => "cache-2131"))->execute();
 		$this->assertFalse($personas->isFresh());
 	}
 }

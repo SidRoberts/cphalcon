@@ -140,14 +140,6 @@ interface ModelInterface
 	public static function cloneResultMapHydrate(array! data, var columnMap, int hydrationMode);
 
 	/**
-	 * Create a criteria for a specific model
-	 *
-	 * @param \Phalcon\DiInterface dependencyInjector
-	 * @return \Phalcon\Mvc\Model\CriteriaInterface
-	 */
-	public static function query(<DiInterface> dependencyInjector = null);
-
-	/**
 	 * Fires an event, implicitly calls behaviors and listeners in the events manager are notified
 	 *
 	 * @param string eventName

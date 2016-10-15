@@ -45,7 +45,7 @@ class CriteriaTest extends UnitTest
             return new Memory;
         });
 
-        Di::setDefault($di);
+        $this->di = $di;
     }
 
     /**
@@ -61,7 +61,13 @@ class CriteriaTest extends UnitTest
         $this->specify(
             'The Criteria::inWhere with empty array does not work as expected',
             function () {
-                $criteria = Users::query()->inWhere(Users::class . '.id', []);
+                $modelsManager = $this->di->get("modelsManager");
+
+                $usersRepository = $modelsManager->getRepository(
+                    Users::class
+                );
+
+                $criteria = $usersRepository->query()->inWhere(Users::class . '.id', []);
 
                 expect($criteria->getWhere())->equals(Users::class . '.id != ' . Users::class . '.id');
                 expect($criteria->execute())->isInstanceOf(Simple::class);
