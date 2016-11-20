@@ -408,13 +408,14 @@ class ModelTest extends UnitTest
             function () {
                 $robot = new Robots();
 
-                $success = $this->modelsManager->save(
-                    $robot,
+                $robot->assign(
                     [
                         "type" => "mechanical",
                         "year" => 2018,
                     ]
                 );
+
+                $success = $this->modelsManager->save($robot);
 
                 expect($success)->false();
                 expect($robot->type)->equals("mechanical");
@@ -488,13 +489,14 @@ class ModelTest extends UnitTest
             function () {
                 $robot = new Robotters();
 
-                $success = $this->modelsManager->save(
-                    $robot,
+                $robot->assign(
                     [
                         "theType" => "mechanical",
                         "theYear" => 2018,
                     ]
                 );
+
+                $success = $this->modelsManager->save($robot);
 
                 expect($success)->false();
                 expect($robot->theType)->equals("mechanical");

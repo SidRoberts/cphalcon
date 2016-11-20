@@ -2981,11 +2981,13 @@ class Query implements QueryInterface, InjectionAwareInterface
 		 */
 		let insertModel = manager->load(modelName);
 
+		insertModel->assign(insertValues);
+
 		/**
 		 * Call 'create' to ensure that an insert is performed
 		 * Return the insert status
 		 */
-		return new Status(manager->create(insertModel, insertValues), insertModel);
+		return new Status(manager->create(insertModel), insertModel);
 	}
 
 	/**
@@ -3129,10 +3131,12 @@ class Query implements QueryInterface, InjectionAwareInterface
 
 			let record = records->current();
 
+			record->assign(updateValues);
+
 			/**
 			 * We apply the executed values to every record found
 			 */
-			if !this->_manager->update(record, updateValues) {
+			if !this->_manager->update(record) {
 
 				/**
 				 * Rollback the transaction on failure

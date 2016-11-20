@@ -2,6 +2,7 @@
 - Moved `Model::find()`, `Model::findFirst()`, `Model::count()`, `Model::sum()`, `Model::maximum()`, `Model::minimum()` and `Model::average()` to Model Repository [#12317](https://github.com/phalcon/cphalcon/issues/12317)
 - Moved `Model::create()`, `Model::update()`, `Model::save()` and `Model::delete()` to Models Manager [#12317](https://github.com/phalcon/cphalcon/issues/12317)
 - Moved `Model::query()` to `ModelRepository::query()` [#12317](https://github.com/phalcon/cphalcon/issues/12317)
+- You can no longer assign data to models whilst saving them [#12317](https://github.com/phalcon/cphalcon/issues/12317)
 
 # [3.2.0](https://github.com/phalcon/cphalcon/releases/tag/v3.2.0) (2017-XX-XX)
 - `Phalcon\Mvc\Model\Criteria::addWhere`, `Phalcon\Debug::getMajorVersion`, `Phalcon\Dispatcher::setModelBinding`, `Phalcon\Tag::resetInput`, `Phalcon\Mvc\Model\Validator::__construct` will now trigger `E_DEPREACATED` on usage

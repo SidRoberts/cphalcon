@@ -564,15 +564,16 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals($persona->cupo, 150000);
 		$this->assertEquals($persona->telefono, '123');
 
+		$persona->assign(
+			array(
+				'nombres' => 'LOST UPDATE',
+				'telefono' => '2121'
+			)
+		);
+
 		//Update
 		$this->assertTrue(
-			$modelsManager->update(
-				$persona,
-				array(
-					'nombres' => 'LOST UPDATE',
-					'telefono' => '2121'
-				)
-			)
+			$modelsManager->update($persona)
 		);
 
 		//Checking correct update
@@ -594,18 +595,18 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$this->assertTrue($modelsManager->create($persona));
 
 		$persona = new Personas($di);
-		$this->assertTrue(
-			$modelsManager->create(
-				$persona,
-				array(
-					'cedula' => 'CELL' . mt_rand(0, 999999),
-					'tipo_documento_id' => 1,
-					'nombres' => 'LOST CREATE',
-					'telefono' => '1',
-					'cupo' => 21000,
-					'estado' => 'A'
-				)
+		$persona->assign(
+			array(
+				'cedula' => 'CELL' . mt_rand(0, 999999),
+				'tipo_documento_id' => 1,
+				'nombres' => 'LOST CREATE',
+				'telefono' => '1',
+				'cupo' => 21000,
+				'estado' => 'A'
 			)
+		);
+		$this->assertTrue(
+			$modelsManager->create($persona)
 		);
 
 		//Grouping
@@ -933,14 +934,14 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals($personer->telefon, '123');
 
 		//Update
-		$this->assertTrue(
-			$di->get("modelsManager")->update(
-				$personer,
-				array(
-					'navnes' => 'LOST UPDATE',
-					'telefon' => '2121'
-				)
+		$personer->assign(
+			array(
+				'navnes' => 'LOST UPDATE',
+				'telefon' => '2121'
 			)
+		);
+		$this->assertTrue(
+			$di->get("modelsManager")->update($personer)
 		);
 
 		//Checking correct update
@@ -962,18 +963,18 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$this->assertTrue($modelsManager->save($personer));
 
 		$personer = new Personers($di);
-		$this->assertTrue(
-			$modelsManager->create(
-				$personer,
-				array(
-					'borgerId' => 'CELL'.mt_rand(0, 999999),
-					'slagBorgerId' => 1,
-					'navnes' => 'LOST CREATE',
-					'telefon' => '1',
-					'kredit' => 21000,
-					'status' => 'A'
-				)
+		$personer->assign(
+			array(
+				'borgerId' => 'CELL'.mt_rand(0, 999999),
+				'slagBorgerId' => 1,
+				'navnes' => 'LOST CREATE',
+				'telefon' => '1',
+				'kredit' => 21000,
+				'status' => 'A'
 			)
+		);
+		$this->assertTrue(
+			$modelsManager->create($personer)
 		);
 
 		//Deleting

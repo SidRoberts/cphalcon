@@ -23,15 +23,15 @@ class Validation
         $I->assertTrue($connection->delete('subscriptores'));
 
         $model = new Subscriptores();
+        $model->assign(
+            [
+                'email'      => 'fuego@hotmail.com',
+                'created_at' => new RawValue('now()'),
+                'status'     => 'A'
+            ]
+        );
         $I->assertTrue(
-            $modelsManager->save(
-                $model,
-                [
-                    'email'      => 'fuego@hotmail.com',
-                    'created_at' => new RawValue('now()'),
-                    'status'     => 'A'
-                ]
-            )
+            $modelsManager->save($model)
         );
     }
 
@@ -43,15 +43,15 @@ class Validation
         $modelsManager = $di->getShared('modelsManager');
 
         $model = new Subscriptores();
+        $model->assign(
+            [
+                'email'      => 'diego@hotmail.com',
+                'created_at' => null,
+                'status'     => 'A'
+            ]
+        );
         $I->assertFalse(
-            $modelsManager->save(
-                $model,
-                [
-                    'email'      => 'diego@hotmail.com',
-                    'created_at' => null,
-                    'status'     => 'A'
-                ]
-            )
+            $modelsManager->save($model)
         );
 
         $expected = [
@@ -74,15 +74,15 @@ class Validation
         $modelsManager = $di->getShared('modelsManager');
 
         $model = new Subscriptores();
+        $model->assign(
+            [
+                'email'      => 'fuego?=',
+                'created_at' => new RawValue('now()'),
+                'status'     => 'A'
+            ]
+        );
         $I->assertFalse(
-            $modelsManager->save(
-                $model,
-                [
-                    'email'      => 'fuego?=',
-                    'created_at' => new RawValue('now()'),
-                    'status'     => 'A'
-                ]
-            )
+            $modelsManager->save($model)
         );
 
         $expected = [
@@ -109,15 +109,15 @@ class Validation
         $modelsManager = $di->getShared('modelsManager');
 
         $model = new Subscriptores();
+        $model->assign(
+            [
+                'email'      => 'serghei.@yahoo.com',
+                'created_at' => new RawValue('now()'),
+                'status'     => 'A'
+            ]
+        );
         $I->assertFalse(
-            $modelsManager->save(
-                $model,
-                [
-                    'email'      => 'serghei.@yahoo.com',
-                    'created_at' => new RawValue('now()'),
-                    'status'     => 'A'
-                ]
-            )
+            $modelsManager->save($model)
         );
 
         $expected = [
@@ -140,15 +140,15 @@ class Validation
         $modelsManager = $di->getShared('modelsManager');
 
         $model = new Subscriptores();
+        $model->assign(
+            [
+                'email'      => 'serghei@hotmail.com',
+                'created_at' => new RawValue('now()'),
+                'status'     => 'P'
+            ]
+        );
         $I->assertFalse(
-            $modelsManager->save(
-                $model,
-                [
-                    'email'      => 'serghei@hotmail.com',
-                    'created_at' => new RawValue('now()'),
-                    'status'     => 'P'
-                ]
-            ),
+            $modelsManager->save($model),
             'The ExclusionIn Validation failed'
         );
 
@@ -178,15 +178,15 @@ class Validation
         $modelsManager = $di->getShared('modelsManager');
 
         $model = new Subscriptores();
+        $model->assign(
+            [
+                'email'      => 'serghei@hotmail.com',
+                'created_at' => new RawValue('now()'),
+                'status'     => 'R'
+            ]
+        );
         $I->assertFalse(
-            $modelsManager->save(
-                $model,
-                [
-                    'email'      => 'serghei@hotmail.com',
-                    'created_at' => new RawValue('now()'),
-                    'status'     => 'R'
-                ]
-            )
+            $modelsManager->save($model)
         );
 
         $expected = [
@@ -215,10 +215,12 @@ class Validation
         ];
 
         $model = new Subscriptores();
-        $I->assertTrue($modelsManager->save($model, $data));
+        $model->assign($data);
+        $I->assertTrue($modelsManager->save($model));
 
         $model = new Subscriptores();
-        $I->assertFalse($modelsManager->save($model, $data));
+        $model->assign($data);
+        $I->assertFalse($modelsManager->save($model));
 
         $expected = [
             Message::__set_state([
@@ -248,10 +250,8 @@ class Validation
         );
 
         $model = $subscriptoresRepository->findFirst();
-        $modelsManager->save(
-            $model,
-            $model->toArray()
-        );
+        $model->assign($model->toArray());
+        $modelsManager->save($model);
 
         $I->assertTrue($model->validation());
         $I->assertEmpty($model->getMessages());
@@ -265,15 +265,15 @@ class Validation
         $modelsManager = $di->getShared('modelsManager');
 
         $model = new Subscriptores();
+        $model->assign(
+            [
+                'email'      => 'andres@hotmail.com',
+                'created_at' => new RawValue('now()'),
+                'status'     => 'y'
+            ]
+        );
         $I->assertFalse(
-            $modelsManager->save(
-                $model,
-                [
-                    'email'      => 'andres@hotmail.com',
-                    'created_at' => new RawValue('now()'),
-                    'status'     => 'y'
-                ]
-            )
+            $modelsManager->save($model)
         );
 
         $expected = [
@@ -296,15 +296,15 @@ class Validation
         $modelsManager = $di->getShared('modelsManager');
 
         $model = new Subscriptores();
+        $model->assign(
+            [
+                'email'      => str_repeat('a', 50) . '@hotmail.com',
+                'created_at' => new RawValue('now()'),
+                'status'     => 'A'
+            ]
+        );
         $I->assertFalse(
-            $modelsManager->save(
-                $model,
-                [
-                    'email'      => str_repeat('a', 50) . '@hotmail.com',
-                    'created_at' => new RawValue('now()'),
-                    'status'     => 'A'
-                ]
-            )
+            $modelsManager->save($model)
         );
 
         $expected = [
@@ -327,15 +327,15 @@ class Validation
         $modelsManager = $di->getShared('modelsManager');
 
         $model = new Subscriptores();
+        $model->assign(
+            [
+                'email'      => 'a@b.c',
+                'created_at' => new RawValue('now()'),
+                'status'     => 'A'
+            ]
+        );
         $I->assertFalse(
-            $modelsManager->save(
-                $model,
-                [
-                    'email'      => 'a@b.c',
-                    'created_at' => new RawValue('now()'),
-                    'status'     => 'A'
-                ]
-            )
+            $modelsManager->save($model)
         );
 
         $expected = [

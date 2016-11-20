@@ -347,12 +347,8 @@ interface ManagerInterface
 	 *
 	 * $modelsManager->save($robot);
 	 *</code>
-	 *
-	 * @param array data
-	 * @param array whiteList
-	 * @return boolean
 	 */
-	public function save(<ModelInterface> model, var data = null, var whiteList = null) -> boolean;
+	public function save(<ModelInterface> model) -> boolean;
 
 	/**
 	 * Inserts a model instance. If the instance already exists in the persistence it will throw an exception
@@ -369,7 +365,7 @@ interface ManagerInterface
 	 * $modelsManager->create($robot);
 	 *</code>
 	 */
-	public function create(<ModelInterface> model, var data = null, var whiteList = null) -> boolean;
+	public function create(<ModelInterface> model) -> boolean;
 
 	/**
 	 * Updates a model instance. If the instance doesn't exist in the persistence it will throw an exception
@@ -389,7 +385,7 @@ interface ManagerInterface
 	 * $modelsManager->update($robot);
 	 *</code>
 	 */
-	public function update(<ModelInterface> model, var data = null, var whiteList = null) -> boolean;
+	public function update(<ModelInterface> model) -> boolean;
 
 	/**
 	 * Deletes a model instance. Returning true on success or false otherwise.

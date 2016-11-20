@@ -1761,21 +1761,13 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	 *
 	 * $modelsManager->save($robot);
 	 *</code>
-	 *
-	 * @param array data
-	 * @param array whiteList
-	 * @return boolean
 	 */
-	public function save(<ModelInterface> model, var data = null, var whiteList = null) -> boolean
+	public function save(<ModelInterface> model) -> boolean
 	{
 		var metaData, related, schema, writeConnection,
 			source, table, identityField, exists, success;
 
 		let metaData = model->getModelsMetaData();
-
-		if typeof data == "array" && count(data) > 0 {
-			model->assign(data, null, whiteList);
-		}
 
 		/**
 		 * Create/Get the current database connection
@@ -1916,7 +1908,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	 * $modelsManager->create($robot);
 	 *</code>
 	 */
-	public function create(<ModelInterface> model, var data = null, var whiteList = null) -> boolean
+	public function create(<ModelInterface> model) -> boolean
 	{
 		/**
 		 * Get the current connection
@@ -1933,7 +1925,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 		/**
 		 * Using save() anyways
 		 */
-		return this->save(model, data, whiteList);
+		return this->save(model);
 	}
 
 	/**
@@ -1954,7 +1946,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	 * $modelsManager->update($robot);
 	 *</code>
 	 */
-	public function update(<ModelInterface> model, var data = null, var whiteList = null) -> boolean
+	public function update(<ModelInterface> model) -> boolean
 	{
 		/**
 		 * We don't check if the record exists if the record is already checked
@@ -1972,7 +1964,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 		/**
 		 * Call save() anyways
 		 */
-		return this->save(model, data, whiteList);
+		return this->save(model);
 	}
 
 	/**
