@@ -73,7 +73,7 @@ class ModelsRelationsMagicTest extends PHPUnit_Framework_TestCase
 		$di->set('db', $connection, true);
 
 		$this->_executeQueryRelated($di);
-		$this->_executeSaveRelatedBelongsTo($connection);
+		$this->_executeSaveRelatedBelongsTo($connection, $di);
 	}
 
 	/*public function testModelsPostgresql()
@@ -131,15 +131,19 @@ class ModelsRelationsMagicTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals($originalAlbum->id, $album->id);
 	}
 
-	public function _executeSaveRelatedBelongsTo($connection)
+	public function _executeSaveRelatedBelongsTo($connection, $di)
 	{
+		$modelsManager = $di->get("modelsManager");
+
 		$artist = new AlbumORama\Artists();
 
 		$album = new AlbumORama\Albums();
 		$album->artist = $artist;
 
 		//Due to not null fields on both models the album/artist aren't saved
-		$this->assertFalse($album->save());
+		$this->assertFalse(
+			$modelsManager->save($album)
+		);
 		$this->assertFalse((bool) $connection->isUnderTransaction());
 
 		//The artists must no be saved
@@ -154,7 +158,9 @@ class ModelsRelationsMagicTest extends PHPUnit_Framework_TestCase
 		$artist->name = 'Van She';
 
 		//Due to not null fields on album model the whole
-		$this->assertFalse($album->save());
+		$this->assertFalse(
+			$modelsManager->save($album)
+		);
 		$this->assertFalse((bool) $connection->isUnderTransaction());
 
 		//The artist model was saved correctly but album not
@@ -169,7 +175,9 @@ class ModelsRelationsMagicTest extends PHPUnit_Framework_TestCase
 		$album->name = 'Idea of Happiness';
 
 		//Saving OK
-		$this->assertTrue($album->save());
+		$this->assertTrue(
+			$modelsManager->save($album)
+		);
 		$this->assertFalse((bool) $connection->isUnderTransaction());
 
 		//Both messages must be saved correctly

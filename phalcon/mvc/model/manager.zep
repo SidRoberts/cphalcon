@@ -20,6 +20,7 @@
 namespace Phalcon\Mvc\Model;
 
 use Phalcon\DiInterface;
+use Phalcon\Mvc\Model;
 use Phalcon\Mvc\Model\Relation;
 use Phalcon\Mvc\Model\RelationInterface;
 use Phalcon\Mvc\Model\Exception;
@@ -1738,5 +1739,676 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 		let repository = new Repository(modelClass, this);
 
 		return repository;
+	}
+
+
+
+	/**
+	 * Inserts or updates a model instance. Returning true on success or false otherwise.
+	 *
+	 *<code>
+	 * // Creating a new robot
+	 * $robot = new Robots();
+	 *
+	 * $robot->type = "mechanical";
+	 * $robot->name = "Astro Boy";
+	 * $robot->year = 1952;
+	 *
+	 * $modelsManager->save($robot);
+	 *
+	 * // Updating a robot name
+	 * $robot = $modelsManager->findFirst(
+	 *     Robots::class,
+	 *     [
+	 *         "id = 100"
+	 *     ]
+	 * );
+	 *
+	 * $robot->name = "Biomass";
+	 *
+	 * $modelsManager->save($robot);
+	 *</code>
+	 *
+	 * @param array data
+	 * @param array whiteList
+	 * @return boolean
+	 */
+	public function save(<ModelInterface> model, var data = null, var whiteList = null) -> boolean
+	{
+		var metaData, related, schema, writeConnection, readConnection,
+			source, table, identityField, exists, success;
+
+		let metaData = model->getModelsMetaData();
+
+		if typeof data == "array" && count(data) > 0 {
+			model->assign(data, null, whiteList);
+		}
+
+		/**
+		 * Create/Get the current database connection
+		 */
+		let writeConnection = model->getWriteConnection();
+
+		/**
+		 * Fire the start event
+		 */
+		model->fireEvent("prepareSave");
+
+		/**
+		 * Save related records in belongsTo relationships
+		 */
+		let related = model->_related;
+		if typeof related == "array" {
+			if model->_preSaveRelatedRecords(writeConnection, related) === false {
+				return false;
+			}
+		}
+
+		let schema = model->getSchema(),
+			source = model->getSource();
+
+		if schema {
+			let table = [schema, source];
+		} else {
+			let table = source;
+		}
+
+		/**
+		 * Create/Get the current database connection
+		 */
+		let readConnection = model->getReadConnection();
+
+		/**
+		 * We need to check if the record exists
+		 */
+		let exists = model->_exists(metaData, readConnection, table);
+
+		if exists {
+			let model->_operationMade = Model::OP_UPDATE;
+		} else {
+			let model->_operationMade = Model::OP_CREATE;
+		}
+
+		/**
+		 * Clean the messages
+		 */
+		let model->_errorMessages = [];
+
+		/**
+		 * Query the identity field
+		 */
+		let identityField = metaData->getIdentityField(model);
+
+		/**
+		 * _preSave() makes all the validations
+		 */
+		if this->_preSave(model, metaData, exists, identityField) === false {
+
+			/**
+			 * Rollback the current transaction if there was validation errors
+			 */
+			if typeof related == "array" {
+				writeConnection->rollback(false);
+			}
+
+			/**
+			 * Throw exceptions on failed saves?
+			 */
+			if globals_get("orm.exception_on_failed_save") {
+				/**
+				 * Launch a Phalcon\Mvc\Model\ValidationFailed to notify that the save failed
+				 */
+				throw new ValidationFailed(model, model->getMessages());
+			}
+
+			return false;
+		}
+
+		/**
+		 * Depending if the record exists we do an update or an insert operation
+		 */
+		if exists {
+			let success = model->_doLowUpdate(metaData, writeConnection, table);
+		} else {
+			let success = model->_doLowInsert(metaData, writeConnection, table, identityField);
+		}
+
+		/**
+		 * Change the dirty state to persistent
+		 */
+		if success {
+			model->setDirtyState(
+				Model::DIRTY_STATE_PERSISTENT
+			);
+		}
+
+		if typeof related == "array" {
+
+			/**
+			 * Rollbacks the implicit transaction if the master save has failed
+			 */
+			if success === false {
+				writeConnection->rollback(false);
+			} else {
+				/**
+				 * Save the post-related records
+				 */
+				let success = model->_postSaveRelatedRecords(writeConnection, related);
+			}
+		}
+
+		/**
+		 * _postSave() invokes after* events if the operation was successful
+		 */
+		if globals_get("orm.events") {
+			let success = this->_postSave(model, success, exists);
+		}
+
+		if success === false {
+			model->_cancelOperation();
+		} else {
+			model->fireEvent("afterSave");
+		}
+
+		return success;
+	}
+
+	/**
+	 * Inserts a model instance. If the instance already exists in the persistence it will throw an exception
+	 * Returning true on success or false otherwise.
+	 *
+	 *<code>
+	 * // Creating a new robot
+	 * $robot = new Robots();
+	 *
+	 * $robot->type = "mechanical";
+	 * $robot->name = "Astro Boy";
+	 * $robot->year = 1952;
+	 *
+	 * $modelsManager->create($robot);
+	 *</code>
+	 */
+	public function create(<ModelInterface> model, var data = null, var whiteList = null) -> boolean
+	{
+		var metaData;
+
+		let metaData = model->getModelsMetaData();
+
+		/**
+		 * Get the current connection
+		 * If the record already exists we must throw an exception
+		 */
+		if model->_exists(metaData, model->getReadConnection()) {
+			let model->_errorMessages = [
+				new Message("Record cannot be created because it already exists", null, "InvalidCreateAttempt")
+			];
+
+			return false;
+		}
+
+		/**
+		 * Using save() anyways
+		 */
+		return this->save(model, data, whiteList);
+	}
+
+	/**
+	 * Updates a model instance. If the instance doesn't exist in the persistence it will throw an exception
+	 * Returning true on success or false otherwise.
+	 *
+	 *<code>
+	 * // Updating a robot name
+	 * $robot = $modelsManager->findFirst(
+	 *     Robots::class,
+	 *     [
+	 *         "id = 100"
+	 *     ]
+	 * );
+	 *
+	 * $robot->name = "Biomass";
+	 *
+	 * $modelsManager->update($robot);
+	 *</code>
+	 */
+	public function update(<ModelInterface> model, var data = null, var whiteList = null) -> boolean
+	{
+		var metaData;
+
+		/**
+		 * We don't check if the record exists if the record is already checked
+		 */
+		if model->getDirtyState() {
+
+			let metaData = model->getModelsMetaData();
+
+			if !model->_exists(metaData, model->getReadConnection()) {
+				let model->_errorMessages = [
+					new Message("Record cannot be updated because it does not exist", null, "InvalidUpdateAttempt")
+				];
+
+				return false;
+			}
+		}
+
+		/**
+		 * Call save() anyways
+		 */
+		return this->save(model, data, whiteList);
+	}
+
+	/**
+	 * Deletes a model instance. Returning true on success or false otherwise.
+	 *
+	 * <code>
+	 * $robot = $modelsManager->findFirst(
+	 *     Robots::class,
+	 *     [
+	 *         "id=100"
+	 *     ]
+	 * );
+	 *
+	 * $modelsManager->delete($robot);
+	 *
+	 * $robots = $modelsManager->find(
+	 *     Robots::class,
+	 *     [
+	 *         "type = 'mechanical'"
+	 *     ]
+	 * );
+	 *
+	 * foreach ($robots as $robot) {
+	 *     $modelsManager->delete($robot);
+	 * }
+	 * </code>
+	 */
+	public function delete(<ModelInterface> model) -> boolean
+	{
+		var metaData, writeConnection, values, bindTypes, primaryKeys,
+			bindDataTypes, columnMap, attributeField, conditions, primaryKey,
+			bindType, value, schema, source, table, success;
+
+		let metaData = model->getModelsMetaData(),
+			writeConnection = model->getWriteConnection();
+
+		/**
+		 * Operation made is OP_DELETE
+		 */
+		let model->_operationMade = Model::OP_DELETE,
+			model->_errorMessages = [];
+
+		/**
+		 * Check if deleting the record violates a virtual foreign key
+		 */
+		if globals_get("orm.virtual_foreign_keys") {
+			if model->_checkForeignKeysReverseRestrict() === false {
+				return false;
+			}
+		}
+
+		let values = [],
+			bindTypes = [],
+			conditions = [];
+
+		let primaryKeys = metaData->getPrimaryKeyAttributes(model),
+			bindDataTypes = metaData->getBindTypes(model);
+
+		if globals_get("orm.column_renaming") {
+			let columnMap = metaData->getColumnMap(model);
+		} else {
+			let columnMap = null;
+		}
+
+		/**
+		 * We can't create dynamic SQL without a primary key
+		 */
+		if !count(primaryKeys) {
+			throw new Exception("A primary key must be defined in the model in order to perform the operation");
+		}
+
+		/**
+		 * Create a condition from the primary keys
+		 */
+		for primaryKey in primaryKeys {
+
+			/**
+			 * Every column part of the primary key must be in the bind data types
+			 */
+			if !fetch bindType, bindDataTypes[primaryKey] {
+				throw new Exception("Column '" . primaryKey . "' have not defined a bind data type");
+			}
+
+			/**
+			 * Take the column values based on the column map if any
+			 */
+			if typeof columnMap == "array" {
+				if !fetch attributeField, columnMap[primaryKey] {
+					throw new Exception("Column '" . primaryKey . "' isn't part of the column map");
+				}
+			} else {
+				let attributeField = primaryKey;
+			}
+
+			/**
+			 * If the attribute is currently set in the object add it to the conditions
+			 */
+			if !fetch value, model->{attributeField} {
+				throw new Exception(
+					"Cannot delete the record because the primary key attribute: '" . attributeField . "' wasn't set"
+				);
+			}
+
+			/**
+			 * Escape the column identifier
+			 */
+			let values[] = value,
+				conditions[] = writeConnection->escapeIdentifier(primaryKey) . " = ?",
+				bindTypes[] = bindType;
+		}
+
+		if globals_get("orm.events") {
+
+			model->skipOperation(false);
+
+			/**
+			 * Fire the beforeDelete event
+			 */
+			if model->fireEventCancel("beforeDelete") === false {
+				return false;
+			} else {
+				/**
+				 * The operation can be skipped
+				 */
+				if model->_skipped === true {
+					return true;
+				}
+			}
+		}
+
+		let schema = model->getSchema(),
+			source = model->getSource();
+
+		if schema {
+			let table = [schema, source];
+		} else {
+			let table = source;
+		}
+
+		/**
+		 * Join the conditions in the array using an AND operator
+		 * Do the deletion
+		 */
+		let success = writeConnection->delete(table, join(" AND ", conditions), values, bindTypes);
+
+		/**
+		 * Check if there is virtual foreign keys with cascade action
+		 */
+		if globals_get("orm.virtual_foreign_keys") {
+			if model->_checkForeignKeysReverseCascade() === false {
+				return false;
+			}
+		}
+
+		if globals_get("orm.events") {
+			if success {
+				model->fireEvent("afterDelete");
+			}
+		}
+
+		/**
+		 * Force perform the record existence checking again
+		 */
+		model->setDirtyState(
+			Model::DIRTY_STATE_DETACHED
+		);
+
+		return success;
+	}
+
+	/**
+	 * Executes internal hooks before save a record
+	 */
+	protected function _preSave(<ModelInterface> model, <MetaDataInterface> metaData, boolean exists, var identityField) -> boolean
+	{
+		var notNull, columnMap, dataTypeNumeric, automaticAttributes, defaultValues,
+			field, attributeField, value, emptyStringValues;
+		boolean error, isNull;
+
+		/**
+		 * Run Validation Callbacks Before
+		 */
+		if globals_get("orm.events") {
+
+			/**
+			 * Call the beforeValidation
+			 */
+			if model->fireEventCancel("beforeValidation") === false {
+				return false;
+			}
+
+			/**
+			 * Call the specific beforeValidation event for the current action
+			 */
+			if !exists {
+				if model->fireEventCancel("beforeValidationOnCreate") === false {
+					return false;
+				}
+			} else {
+				if model->fireEventCancel("beforeValidationOnUpdate") === false {
+					return false;
+				}
+			}
+		}
+
+		/**
+		 * Check for Virtual foreign keys
+		 */
+		if globals_get("orm.virtual_foreign_keys") {
+			if model->_checkForeignKeysRestrict() === false {
+				return false;
+			}
+		}
+
+		/**
+		 * Columns marked as not null are automatically validated by the ORM
+		 */
+		if globals_get("orm.not_null_validations") {
+
+			let notNull = metaData->getNotNullAttributes(model);
+			if typeof notNull == "array" {
+
+				/**
+				 * Gets the fields that are numeric, these are validated in a different way
+				 */
+				let dataTypeNumeric = metaData->getDataTypesNumeric(model);
+
+				if globals_get("orm.column_renaming") {
+					let columnMap = metaData->getColumnMap(model);
+				} else {
+					let columnMap = null;
+				}
+
+				/**
+				 * Get fields that must be omitted from the SQL generation
+				 */
+				if exists {
+					let automaticAttributes = metaData->getAutomaticUpdateAttributes(model);
+				} else {
+					let automaticAttributes = metaData->getAutomaticCreateAttributes(model);
+				}
+
+				let defaultValues = metaData->getDefaultValues(model);
+
+				/**
+				 * Get string attributes that allow empty strings as defaults
+				 */
+				let emptyStringValues = metaData->getEmptyStringAttributes(model);
+
+				let error = false;
+				for field in notNull {
+
+					/**
+					 * We don't check fields that must be omitted
+					 */
+					if !isset automaticAttributes[field] {
+
+						let isNull = false;
+
+						if typeof columnMap == "array" {
+							if !fetch attributeField, columnMap[field] {
+								throw new Exception("Column '" . field . "' isn't part of the column map");
+							}
+						} else {
+							let attributeField = field;
+						}
+
+						/**
+						 * Field is null when: 1) is not set, 2) is numeric but
+						 * its value is not numeric, 3) is null or 4) is empty string
+						 * Read the attribute from the this_ptr using the real or renamed name
+						 */
+						if fetch value, model->{attributeField} {
+
+							/**
+							 * Objects are never treated as null, numeric fields must be numeric to be accepted as not null
+							 */
+							if typeof value != "object" {
+								if !isset dataTypeNumeric[field] {
+									if isset emptyStringValues[field] {
+										if value === null {
+											let isNull = true;
+										}
+									} else {
+										if value === null || (value === "" && (!isset defaultValues[field] || value !== defaultValues[field])) {
+											let isNull = true;
+										}
+									}
+								} else {
+									if !is_numeric(value) {
+										let isNull = true;
+									}
+								}
+							}
+
+						} else {
+							let isNull = true;
+						}
+
+						if isNull === true {
+
+							if !exists {
+								/**
+								 * The identity field can be null
+								 */
+								if field == identityField {
+									continue;
+								}
+
+								/**
+								 * The field have default value can be null
+								 */
+								if isset defaultValues[field] {
+									continue;
+								}
+							}
+
+							/**
+							 * An implicit PresenceOf message is created
+							 */
+							let model->_errorMessages[] = new Message(attributeField . " is required", attributeField, "PresenceOf"),
+								error = true;
+						}
+					}
+				}
+
+				if error === true {
+					if globals_get("orm.events") {
+						model->fireEvent("onValidationFails");
+						model->_cancelOperation();
+					}
+					return false;
+				}
+			}
+		}
+
+		/**
+		 * Call the main validation event
+		 */
+		if model->fireEventCancel("validation") === false {
+			if globals_get("orm.events") {
+				model->fireEvent("onValidationFails");
+			}
+			return false;
+		}
+
+		/**
+		 * Run Validation
+		 */
+		if globals_get("orm.events") {
+
+			/**
+			 * Run Validation Callbacks After
+			 */
+			if !exists {
+				if model->fireEventCancel("afterValidationOnCreate") === false {
+					return false;
+				}
+			} else {
+				if model->fireEventCancel("afterValidationOnUpdate") === false {
+					return false;
+				}
+			}
+
+			if model->fireEventCancel("afterValidation") === false {
+				return false;
+			}
+
+			/**
+			 * Run Before Callbacks
+			 */
+			if model->fireEventCancel("beforeSave") === false {
+				return false;
+			}
+
+			let model->_skipped = false;
+
+			/**
+			 * The operation can be skipped here
+			 */
+			if exists {
+				if model->fireEventCancel("beforeUpdate") === false {
+					return false;
+				}
+			} else {
+				if model->fireEventCancel("beforeCreate") === false {
+					return false;
+				}
+			}
+
+			/**
+			 * Always return true if the operation is skipped
+			 */
+			if model->_skipped === true {
+				return true;
+			}
+
+		}
+
+		return true;
+	}
+
+	/**
+	 * Executes internal events after save a record
+	 */
+	protected function _postSave(<ModelInterface> model, boolean success, boolean exists) -> boolean
+	{
+		if success === true {
+			if exists {
+				model->fireEvent("afterUpdate");
+			} else {
+				model->fireEvent("afterCreate");
+			}
+		}
+
+		return success;
 	}
 }

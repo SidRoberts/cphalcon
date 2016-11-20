@@ -37,7 +37,7 @@ class SoftDelete extends Behavior
 	 */
 	public function notify(string! type, <ModelInterface> model)
 	{
-		var options, value, field, updateModel, message;
+		var options, value, field, updateModel, message, modelsManager;
 
 		if type == "beforeDelete" {
 
@@ -74,10 +74,12 @@ class SoftDelete extends Behavior
 
 				updateModel->writeAttribute(field, value);
 
+				let modelsManager = updateModel->getModelsManager();
+
 				/**
 				 * Update the cloned model
 				 */
-				if !updateModel->save() {
+				if !modelsManager->save(updateModel) {
 
 					/**
 					 * Transfer the messages from the cloned model to the original model

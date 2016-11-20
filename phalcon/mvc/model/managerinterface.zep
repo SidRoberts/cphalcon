@@ -321,4 +321,100 @@ interface ManagerInterface
 	public function getRelationByAlias(string modelName, string alias);
 
 	public function getRepository(string! modelClass) -> <RepositoryInterface>;
+
+	/**
+	 * Inserts or updates a model instance. Returning true on success or false otherwise.
+	 *
+	 *<code>
+	 * // Creating a new robot
+	 * $robot = new Robots();
+	 *
+	 * $robot->type = "mechanical";
+	 * $robot->name = "Astro Boy";
+	 * $robot->year = 1952;
+	 *
+	 * $modelsManager->save($robot);
+	 *
+	 * // Updating a robot name
+	 * $robot = $modelsManager->findFirst(
+	 *     Robots::class,
+	 *     [
+	 *         "id = 100"
+	 *     ]
+	 * );
+	 *
+	 * $robot->name = "Biomass";
+	 *
+	 * $modelsManager->save($robot);
+	 *</code>
+	 *
+	 * @param array data
+	 * @param array whiteList
+	 * @return boolean
+	 */
+	public function save(<ModelInterface> model, var data = null, var whiteList = null) -> boolean;
+
+	/**
+	 * Inserts a model instance. If the instance already exists in the persistence it will throw an exception
+	 * Returning true on success or false otherwise.
+	 *
+	 *<code>
+	 * // Creating a new robot
+	 * $robot = new Robots();
+	 *
+	 * $robot->type = "mechanical";
+	 * $robot->name = "Astro Boy";
+	 * $robot->year = 1952;
+	 *
+	 * $modelsManager->create($robot);
+	 *</code>
+	 */
+	public function create(<ModelInterface> model, var data = null, var whiteList = null) -> boolean;
+
+	/**
+	 * Updates a model instance. If the instance doesn't exist in the persistence it will throw an exception
+	 * Returning true on success or false otherwise.
+	 *
+	 *<code>
+	 * // Updating a robot name
+	 * $robot = $modelsManager->findFirst(
+	 *     Robots::class,
+	 *     [
+	 *         "id = 100"
+	 *     ]
+	 * );
+	 *
+	 * $robot->name = "Biomass";
+	 *
+	 * $modelsManager->update($robot);
+	 *</code>
+	 */
+	public function update(<ModelInterface> model, var data = null, var whiteList = null) -> boolean;
+
+	/**
+	 * Deletes a model instance. Returning true on success or false otherwise.
+	 *
+	 * <code>
+	 * $robot = $modelsManager->findFirst(
+	 *     Robots::class,
+	 *     [
+	 *         "id=100"
+	 *     ]
+	 * );
+	 *
+	 * $modelsManager->delete($robot);
+	 *
+	 * $robots = $modelsManager->find(
+	 *     Robots::class,
+	 *     [
+	 *         "type = 'mechanical'"
+	 *     ]
+	 * );
+	 *
+	 * foreach ($robots as $robot) {
+	 *     $modelsManager->delete($robot);
+	 * }
+	 * </code>
+	 */
+	public function delete(<ModelInterface> model) -> boolean;
 }

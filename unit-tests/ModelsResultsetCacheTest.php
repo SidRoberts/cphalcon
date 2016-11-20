@@ -172,7 +172,7 @@ class ModelsResultsetCacheTest extends PHPUnit_Framework_TestCase
 			$newrobot->year = 2014;
 			$newrobot->datetime = '2015-03-05 04:16:17';
 			$newrobot->text = 'Not cached robot';
-			$newrobot->create();
+			$di->get("modelsManager")->create($newrobot);
 
 			$robotscount = $robotsRepository->count(
 				array(
@@ -187,7 +187,7 @@ class ModelsResultsetCacheTest extends PHPUnit_Framework_TestCase
 					"type = 'notcached'"
 				)
 			);
-			$notCachedRobot->delete();
+			$di->get("modelsManager")->delete($notCachedRobot);
 		}
 	}
 

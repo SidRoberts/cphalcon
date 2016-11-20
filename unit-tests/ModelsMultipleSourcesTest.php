@@ -86,7 +86,9 @@ class ModelsMultipleSourcesTest extends PHPUnit_Framework_TestCase
 
 		$robot = $storeRobotsRepository->findFirst();
 		$this->assertTrue(is_object($robot));
-		$this->assertTrue($robot->save());
+		$this->assertTrue(
+			$di->get("modelsManager")->save($robot)
+		);
 
 		$robotParts = $robot->getRobotParts();
 		$this->assertTrue(is_object($robotParts));
@@ -108,7 +110,9 @@ class ModelsMultipleSourcesTest extends PHPUnit_Framework_TestCase
 		$this->_prepareDI();
 
 		$robot = new Store\Robots();
-		$this->assertFalse($robot->save());
+		$this->assertFalse(
+			$di->get("modelsManager")->save($robot)
+		);
 	}
 
 }

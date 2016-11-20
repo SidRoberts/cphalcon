@@ -417,7 +417,7 @@ abstract class Resultset
 	public function update(var data, <\Closure> conditionCallback = null) -> boolean
 	{
 		boolean transaction;
-		var record, connection = null;
+		var record, modelsManager, connection = null;
 
 		let transaction = false;
 
@@ -426,6 +426,8 @@ abstract class Resultset
 		while this->valid() {
 
 			let record = this->current();
+
+			let modelsManager = record->getModelsManager();
 
 			if transaction === false {
 
@@ -455,7 +457,7 @@ abstract class Resultset
 			/**
 			 * Try to update the record
 			 */
-			if !record->save(data) {
+			if !modelsManager->save(record, data) {
 
 				/**
 				 * Get the messages from the record that produce the error
@@ -489,7 +491,7 @@ abstract class Resultset
 	public function delete(<\Closure> conditionCallback = null) -> boolean
 	{
 		boolean transaction;
-		var record, connection = null;
+		var record, modelsManager, connection = null;
 
 		let transaction = false;
 
@@ -498,6 +500,8 @@ abstract class Resultset
 		while this->valid() {
 
 			let record = this->current();
+
+			let modelsManager = record->getModelsManager();
 
 			if transaction === false {
 
@@ -527,7 +531,7 @@ abstract class Resultset
 			/**
 			 * Try to delete the record
 			 */
-			if !record->delete() {
+			if !modelsManager->delete(record) {
 
 				/**
 				 * Get the messages from the record that produce the error

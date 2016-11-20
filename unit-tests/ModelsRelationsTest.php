@@ -387,12 +387,18 @@ class ModelsRelationsTest extends PHPUnit_Framework_TestCase
 		$part4 = new M2MParts();
 		$part4->name = 'Part 4';
 
-		$this->assertTrue($part1->save());
-		$this->assertTrue($part2->save());
+		$this->assertTrue(
+			$manager->save($part1)
+		);
+		$this->assertTrue(
+			$manager->save($part2)
+		);
 
 		$robot->m2mparts = array($part1, $part2, $part3, $part4);
 
-		$this->assertTrue($robot->save());
+		$this->assertTrue(
+			$manager->save($robot)
+		);
 
 		$m2mPartsRepository = $manager->getRepository(
 			M2MParts::class

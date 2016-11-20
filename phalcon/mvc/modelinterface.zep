@@ -184,42 +184,6 @@ interface ModelInterface
 	public function getMessages();
 
 	/**
-	 * Inserts or updates a model instance. Returning true on success or false otherwise.
-	 *
-	 * @param  array data
-	 * @param  array whiteList
-	 * @return boolean
-	 */
-	public function save(data = null, whiteList = null);
-
-	/**
-	 * Inserts a model instance. If the instance already exists in the persistence it will throw an exception
-	 * Returning true on success or false otherwise.
-	 *
-	 * @param  array data
-	 * @param  array whiteList
-	 * @return boolean
-	 */
-	public function create(data = null, whiteList = null);
-
-	/**
-	 * Updates a model instance. If the instance doesn't exist in the persistence it will throw an exception
-	 * Returning true on success or false otherwise.
-	 *
-	 * @param  array data
-	 * @param  array whiteList
-	 * @return boolean
-	 */
-	public function update(data = null, whiteList = null);
-
-	/**
-	 * Deletes a model instance. Returning true on success or false otherwise.
-	 *
-	 * @return boolean
-	 */
-	public function delete();
-
-	/**
 	 * Returns the type of the latest operation performed by the ORM
 	 * Returns one of the OP_* class constants
 	 *

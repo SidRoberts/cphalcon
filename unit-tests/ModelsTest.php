@@ -147,13 +147,15 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$db = $di->getShared('db');
 		$this->_prepareDb($di->getShared('db'));
 
+		$modelsManager = $di->getShared('modelsManager');
+
 		$child = new Childs();
 		$child->for = '1';
-		$child->create();
+		$modelsManager->create($child);
 
 		$child = new Childs();
 		$child->group = '1';
-		$child->create();
+		$modelsManager->create($child);
 
 		$children = Childs::findByFor(1);
 		$children = Childs::findByGroup(1);
@@ -179,7 +181,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$product->slug      = 'bar';
 		$product->brand     = new \Phalcon\Db\RawValue('default');
 		$product->sort      = new \Phalcon\Db\RawValue('default');
-		$this->assertTrue($product->save());
+		$this->assertTrue($modelsManager->save($product));
 		$this->assertEquals(
 			1,
 			$issue1534Repository->count()
@@ -191,7 +193,9 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals('0', $entry->sort);
 		$this->assertTrue($entry->brand === NULL);
 
-		$this->assertTrue($entry->delete());
+		$this->assertTrue(
+			$di->get("modelsManager")->delete($entry)
+		);
 
 		$product = new Issue_1534();
 		$product->language  = 'en';
@@ -200,7 +204,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$product->slug      = 'bar';
 		$product->brand     = 'brand';
 		$product->sort      = 1;
-		$this->assertTrue($product->save());
+		$this->assertTrue($modelsManager->save($product));
 		$this->assertEquals(
 			1,
 			$issue1534Repository->count()
@@ -209,7 +213,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$entry = $issue1534Repository->findFirst();
 		$entry->brand    = new \Phalcon\Db\RawValue('default');
 		$entry->sort     = new \Phalcon\Db\RawValue('default');
-		$this->assertTrue($entry->save());
+		$this->assertTrue($modelsManager->save($entry));
 		$this->assertEquals(
 			1,
 			$issue1534Repository->count()
@@ -220,7 +224,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$this->assertTrue($entry->brand === NULL);
 
 		$entry->language2 = new \Phalcon\Db\RawValue('default(language)');
-		$this->assertTrue($entry->save());
+		$this->assertTrue($modelsManager->save($entry));
 		$this->assertEquals(
 			1,
 			$issue1534Repository->count()
@@ -230,7 +234,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals('bb', $entry->language2);
 		$this->assertEquals('0', $entry->sort);
 		$this->assertTrue($entry->brand === NULL);
-		$entry->delete();
+		$di->get("modelsManager")->delete($entry);
 
 		//test subject of Issue - setting RawValue('default')
 		$product = new Issue_1534();
@@ -240,7 +244,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$product->slug     = 'bar';
 		$product->brand    = 'brand';
 		$product->sort     = 1;
-		$this->assertTrue($product->save());
+		$this->assertTrue($modelsManager->save($product));
 		$this->assertEquals(
 			1,
 			$issue1534Repository->count()
@@ -252,13 +256,13 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals('bb', $entry->language2);
 
 		$entry->language2 = 'en';
-		$this->assertTrue($entry->save());
+		$this->assertTrue($modelsManager->save($entry));
 
 		$entry = $issue1534Repository->findFirst();
 		$this->assertEquals('en', $entry->language2);
 
 		$entry->language2 = new \Phalcon\Db\RawValue('default');
-		$this->assertTrue($entry->save());
+		$this->assertTrue($modelsManager->save($entry));
 
 		$entry = $issue1534Repository->findFirst();
 		$this->assertEquals('bb', $entry->language2);
@@ -485,7 +489,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 
 		$persona = new Personas($di);
 		$persona->cedula = 'CELL' . mt_rand(0, 999999);
-		$this->assertFalse($persona->save());
+		$this->assertFalse($modelsManager->save($persona));
 
 		//Messages
 		$this->assertEquals(count($persona->getMessages()), 3);
@@ -520,7 +524,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$persona->telefono = '1';
 		$persona->cupo = 20000;
 		$persona->estado = 'A';
-		$this->assertTrue($persona->save());
+		$this->assertTrue($modelsManager->save($persona));
 
 		$persona = new Personas($di);
 		$persona->cedula = 'CELL' . mt_rand(0, 999999);
@@ -529,7 +533,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$persona->telefono = '2';
 		$persona->cupo = 0;
 		$persona->estado = 'X';
-		$this->assertTrue($persona->save());
+		$this->assertTrue($modelsManager->save($persona));
 
 		//Check correct save
 		$persona = $personasRepository->findFirst(
@@ -544,7 +548,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		//Update
 		$persona->cupo = 150000;
 		$persona->telefono = '123';
-		$this->assertTrue($persona->update());
+		$this->assertTrue($modelsManager->update($persona));
 
 		//Checking correct update
 		$persona = $personasRepository->findFirst(
@@ -557,10 +561,15 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals($persona->telefono, '123');
 
 		//Update
-		$this->assertTrue($persona->update(array(
-			'nombres' => 'LOST UPDATE',
-			'telefono' => '2121'
-		)));
+		$this->assertTrue(
+			$modelsManager->update(
+				$persona,
+				array(
+					'nombres' => 'LOST UPDATE',
+					'telefono' => '2121'
+				)
+			)
+		);
 
 		//Checking correct update
 		$persona = $personasRepository->findFirst(
@@ -578,17 +587,22 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$persona->telefono = '1';
 		$persona->cupo = 21000;
 		$persona->estado = 'A';
-		$this->assertTrue($persona->create());
+		$this->assertTrue($modelsManager->create($persona));
 
 		$persona = new Personas($di);
-		$this->assertTrue($persona->create(array(
-			'cedula' => 'CELL' . mt_rand(0, 999999),
-			'tipo_documento_id' => 1,
-			'nombres' => 'LOST CREATE',
-			'telefono' => '1',
-			'cupo' => 21000,
-			'estado' => 'A'
-		)));
+		$this->assertTrue(
+			$modelsManager->create(
+				$persona,
+				array(
+					'cedula' => 'CELL' . mt_rand(0, 999999),
+					'tipo_documento_id' => 1,
+					'nombres' => 'LOST CREATE',
+					'telefono' => '1',
+					'cupo' => 21000,
+					'estado' => 'A'
+				)
+			)
+		);
 
 		//Grouping
 		$difEstados = $peopleRepository->count(
@@ -603,7 +617,9 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 
 		//Deleting
 		$before = $peopleRepository->count();
-		$this->assertTrue($persona->delete());
+		$this->assertTrue(
+			$di->get("modelsManager")->delete($persona)
+		);
 		$this->assertEquals(
 			$before - 1,
 			$peopleRepository->count()
@@ -683,7 +699,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 
 		// Issue 1314
 		$parts = new Parts2();
-		$parts->save();
+		$modelsManager->save($parts);
 
 		// Issue 1506
 		$persona = $personasRepository->findFirst(
@@ -843,7 +859,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 
 		$personer = new Personers($di);
 		$personer->borgerId = 'CELL'.mt_rand(0, 999999);
-		$this->assertFalse($personer->save());
+		$this->assertFalse($modelsManager->save($personer));
 
 		//Messages
 		$this->assertEquals(count($personer->getMessages()), 3);
@@ -878,7 +894,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$personer->telefon = '1';
 		$personer->kredit = 20000;
 		$personer->status = 'A';
-		$this->assertTrue($personer->save());
+		$this->assertTrue($modelsManager->save($personer));
 
 		$personer = new Personers($di);
 		$personer->borgerId = 'CELL'.mt_rand(0, 999999);
@@ -887,7 +903,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$personer->telefon = '2';
 		$personer->kredit = 0;
 		$personer->status = 'X';
-		$this->assertTrue($personer->save());
+		$this->assertTrue($modelsManager->save($personer));
 
 		//Check correct save
 		$personer = $personersRepository->findFirst(
@@ -902,7 +918,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		//Update
 		$personer->kredit = 150000;
 		$personer->telefon = '123';
-		$this->assertTrue($personer->update());
+		$this->assertTrue($modelsManager->update($personer));
 
 		//Checking correct update
 		$personer = $personersRepository->findFirst(
@@ -913,10 +929,15 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals($personer->telefon, '123');
 
 		//Update
-		$this->assertTrue($personer->update(array(
-			'navnes' => 'LOST UPDATE',
-			'telefon' => '2121'
-		)));
+		$this->assertTrue(
+			$di->get("modelsManager")->update(
+				$personer,
+				array(
+					'navnes' => 'LOST UPDATE',
+					'telefon' => '2121'
+				)
+			)
+		);
 
 		//Checking correct update
 		$personer = $personersRepository->findFirst(
@@ -934,21 +955,28 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$personer->telefon = '2';
 		$personer->kredit = 21000;
 		$personer->status = 'A';
-		$this->assertTrue($personer->save());
+		$this->assertTrue($modelsManager->save($personer));
 
 		$personer = new Personers($di);
-		$this->assertTrue($personer->create(array(
-			'borgerId' => 'CELL'.mt_rand(0, 999999),
-			'slagBorgerId' => 1,
-			'navnes' => 'LOST CREATE',
-			'telefon' => '1',
-			'kredit' => 21000,
-			'status' => 'A'
-		)));
+		$this->assertTrue(
+			$modelsManager->create(
+				$personer,
+				array(
+					'borgerId' => 'CELL'.mt_rand(0, 999999),
+					'slagBorgerId' => 1,
+					'navnes' => 'LOST CREATE',
+					'telefon' => '1',
+					'kredit' => 21000,
+					'status' => 'A'
+				)
+			)
+		);
 
 		//Deleting
 		$before = $personersRepository->count();
-		$this->assertTrue($personer->delete());
+		$this->assertTrue(
+			$di->get("modelsManager")->delete($personer)
+		);
 		$this->assertEquals(
 			$before - 1,
 			$personersRepository->count()

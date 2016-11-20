@@ -18,24 +18,41 @@ class Validation
         /** @var \Phalcon\Db\Adapter\Pdo\Mysql $connection */
         $connection = $di->getShared('db');
 
+        $modelsManager = $di->getShared('modelsManager');
+
         $I->assertTrue($connection->delete('subscriptores'));
 
         $model = new Subscriptores();
-        $I->assertTrue($model->save([
-            'email'      => 'fuego@hotmail.com',
-            'created_at' => new RawValue('now()'),
-            'status'     => 'A'
-        ]));
+        $I->assertTrue(
+            $modelsManager->save(
+                $model,
+                [
+                    'email'      => 'fuego@hotmail.com',
+                    'created_at' => new RawValue('now()'),
+                    'status'     => 'A'
+                ]
+            )
+        );
     }
 
     protected function presenceOf(UnitTester $I)
     {
+        /** @var \Phalcon\Di\FactoryDefault $di */
+        $di = Di::getDefault();
+
+        $modelsManager = $di->getShared('modelsManager');
+
         $model = new Subscriptores();
-        $I->assertFalse($model->save([
-            'email'      => 'diego@hotmail.com',
-            'created_at' => null,
-            'status'     => 'A'
-        ]));
+        $I->assertFalse(
+            $modelsManager->save(
+                $model,
+                [
+                    'email'      => 'diego@hotmail.com',
+                    'created_at' => null,
+                    'status'     => 'A'
+                ]
+            )
+        );
 
         $expected = [
             Message::__set_state([
@@ -51,12 +68,22 @@ class Validation
 
     protected function email(UnitTester $I)
     {
+        /** @var \Phalcon\Di\FactoryDefault $di */
+        $di = Di::getDefault();
+
+        $modelsManager = $di->getShared('modelsManager');
+
         $model = new Subscriptores();
-        $I->assertFalse($model->save([
-            'email'      => 'fuego?=',
-            'created_at' => new RawValue('now()'),
-            'status'     => 'A'
-        ]));
+        $I->assertFalse(
+            $modelsManager->save(
+                $model,
+                [
+                    'email'      => 'fuego?=',
+                    'created_at' => new RawValue('now()'),
+                    'status'     => 'A'
+                ]
+            )
+        );
 
         $expected = [
             Message::__set_state([
@@ -76,12 +103,22 @@ class Validation
      */
     protected function emailWithDot(UnitTester $I)
     {
+        /** @var \Phalcon\Di\FactoryDefault $di */
+        $di = Di::getDefault();
+
+        $modelsManager = $di->getShared('modelsManager');
+
         $model = new Subscriptores();
-        $I->assertFalse($model->save([
-            'email'      => 'serghei.@yahoo.com',
-            'created_at' => new RawValue('now()'),
-            'status'     => 'A'
-        ]));
+        $I->assertFalse(
+            $modelsManager->save(
+                $model,
+                [
+                    'email'      => 'serghei.@yahoo.com',
+                    'created_at' => new RawValue('now()'),
+                    'status'     => 'A'
+                ]
+            )
+        );
 
         $expected = [
             Message::__set_state([
@@ -97,12 +134,23 @@ class Validation
 
     protected function exclusionIn(UnitTester $I)
     {
+        /** @var \Phalcon\Di\FactoryDefault $di */
+        $di = Di::getDefault();
+
+        $modelsManager = $di->getShared('modelsManager');
+
         $model = new Subscriptores();
-        $I->assertFalse($model->save([
-            'email'      => 'serghei@hotmail.com',
-            'created_at' => new RawValue('now()'),
-            'status'     => 'P'
-        ]), 'The ExclusionIn Validation failed');
+        $I->assertFalse(
+            $modelsManager->save(
+                $model,
+                [
+                    'email'      => 'serghei@hotmail.com',
+                    'created_at' => new RawValue('now()'),
+                    'status'     => 'P'
+                ]
+            ),
+            'The ExclusionIn Validation failed'
+        );
 
         $expected = [
             Message::__set_state([
@@ -124,12 +172,22 @@ class Validation
 
     protected function inclusionIn(UnitTester $I)
     {
+        /** @var \Phalcon\Di\FactoryDefault $di */
+        $di = Di::getDefault();
+
+        $modelsManager = $di->getShared('modelsManager');
+
         $model = new Subscriptores();
-        $I->assertFalse($model->save([
-            'email'      => 'serghei@hotmail.com',
-            'created_at' => new RawValue('now()'),
-            'status'     => 'R'
-        ]));
+        $I->assertFalse(
+            $modelsManager->save(
+                $model,
+                [
+                    'email'      => 'serghei@hotmail.com',
+                    'created_at' => new RawValue('now()'),
+                    'status'     => 'R'
+                ]
+            )
+        );
 
         $expected = [
             Message::__set_state([
@@ -145,6 +203,11 @@ class Validation
 
     protected function uniqueness1(UnitTester $I)
     {
+        /** @var \Phalcon\Di\FactoryDefault $di */
+        $di = Di::getDefault();
+
+        $modelsManager = $di->getShared('modelsManager');
+
         $data = [
             'email'      => 'jurigag@hotmail.com',
             'created_at' => new RawValue('now()'),
@@ -152,10 +215,10 @@ class Validation
         ];
 
         $model = new Subscriptores();
-        $I->assertTrue($model->save($data));
+        $I->assertTrue($modelsManager->save($model, $data));
 
         $model = new Subscriptores();
-        $I->assertFalse($model->save($data));
+        $I->assertFalse($modelsManager->save($model, $data));
 
         $expected = [
             Message::__set_state([
@@ -185,7 +248,10 @@ class Validation
         );
 
         $model = $subscriptoresRepository->findFirst();
-        $model->save($model->toArray());
+        $modelsManager->save(
+            $model,
+            $model->toArray()
+        );
 
         $I->assertTrue($model->validation());
         $I->assertEmpty($model->getMessages());
@@ -193,12 +259,22 @@ class Validation
 
     protected function regex(UnitTester $I)
     {
+        /** @var \Phalcon\Di\FactoryDefault $di */
+        $di = Di::getDefault();
+
+        $modelsManager = $di->getShared('modelsManager');
+
         $model = new Subscriptores();
-        $I->assertFalse($model->save([
-            'email'      => 'andres@hotmail.com',
-            'created_at' => new RawValue('now()'),
-            'status'     => 'y'
-        ]));
+        $I->assertFalse(
+            $modelsManager->save(
+                $model,
+                [
+                    'email'      => 'andres@hotmail.com',
+                    'created_at' => new RawValue('now()'),
+                    'status'     => 'y'
+                ]
+            )
+        );
 
         $expected = [
             Message::__set_state([
@@ -214,12 +290,22 @@ class Validation
 
     protected function tooLong(UnitTester $I)
     {
+        /** @var \Phalcon\Di\FactoryDefault $di */
+        $di = Di::getDefault();
+
+        $modelsManager = $di->getShared('modelsManager');
+
         $model = new Subscriptores();
-        $I->assertFalse($model->save([
-            'email'      => str_repeat('a', 50) . '@hotmail.com',
-            'created_at' => new RawValue('now()'),
-            'status'     => 'A'
-        ]));
+        $I->assertFalse(
+            $modelsManager->save(
+                $model,
+                [
+                    'email'      => str_repeat('a', 50) . '@hotmail.com',
+                    'created_at' => new RawValue('now()'),
+                    'status'     => 'A'
+                ]
+            )
+        );
 
         $expected = [
             Message::__set_state([
@@ -235,12 +321,22 @@ class Validation
 
     protected function tooShort(UnitTester $I)
     {
+        /** @var \Phalcon\Di\FactoryDefault $di */
+        $di = Di::getDefault();
+
+        $modelsManager = $di->getShared('modelsManager');
+
         $model = new Subscriptores();
-        $I->assertFalse($model->save([
-            'email'      => 'a@b.c',
-            'created_at' => new RawValue('now()'),
-            'status'     => 'A'
-        ]));
+        $I->assertFalse(
+            $modelsManager->save(
+                $model,
+                [
+                    'email'      => 'a@b.c',
+                    'created_at' => new RawValue('now()'),
+                    'status'     => 'A'
+                ]
+            )
+        );
 
         $expected = [
             Message::__set_state([

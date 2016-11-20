@@ -136,14 +136,18 @@ class ModelsValidatorsTest extends PHPUnit_Framework_TestCase
 		$abonne->courrierElectronique = 'fuego@hotmail.com';
 		$abonne->creeA = $createdAt;
 		$abonne->statut = 'P';
-		$this->assertTrue($abonne->save());
+		$this->assertTrue(
+			$di->get("modelsManager")->save($abonne)
+		);
 
 		//PresenceOf
 		$abonne = new Abonnes();
 		$abonne->courrierElectronique = 'fuego1@hotmail.com';
 		$abonne->creeA = null;
 		$abonne->statut = 'P';
-		$this->assertFalse($abonne->save());
+		$this->assertFalse(
+			$di->get("modelsManager")->save($abonne)
+		);
 
 		$this->assertEquals(count($abonne->getMessages()), 1);
 
@@ -157,7 +161,9 @@ class ModelsValidatorsTest extends PHPUnit_Framework_TestCase
 		$abonne->courrierElectronique = 'fuego?=';
 		$abonne->creeA = $createdAt;
 		$abonne->statut = 'P';
-		$this->assertFalse($abonne->save());
+		$this->assertFalse(
+			$di->get("modelsManager")->save($abonne)
+		);
 
 		$this->assertEquals(count($abonne->getMessages()), 1);
 
@@ -169,7 +175,9 @@ class ModelsValidatorsTest extends PHPUnit_Framework_TestCase
 		//ExclusionIn
 		$abonne->courrierElectronique = 'le_fuego@hotmail.com';
 		$abonne->statut = 'X';
-		$this->assertFalse($abonne->save());
+		$this->assertFalse(
+			$di->get("modelsManager")->save($abonne)
+		);
 
 		$messages = $abonne->getMessages();
 		$this->assertEquals($messages[0]->getType(), "Exclusion");
@@ -178,7 +186,9 @@ class ModelsValidatorsTest extends PHPUnit_Framework_TestCase
 
 		//InclusionIn
 		$abonne->statut = 'A';
-		$this->assertFalse($abonne->save());
+		$this->assertFalse(
+			$di->get("modelsManager")->save($abonne)
+		);
 
 		$messages = $abonne->getMessages();
 		$this->assertEquals($messages[0]->getType(), "Inclusion");
@@ -188,7 +198,9 @@ class ModelsValidatorsTest extends PHPUnit_Framework_TestCase
 		//Uniqueness validator
 		$abonne->courrierElectronique = 'fuego@hotmail.com';
 		$abonne->statut = 'P';
-		$this->assertFalse($abonne->save());
+		$this->assertFalse(
+			$di->get("modelsManager")->save($abonne)
+		);
 
 		$messages = $abonne->getMessages();
 		$this->assertEquals($messages[0]->getType(), "Unique");
@@ -198,7 +210,9 @@ class ModelsValidatorsTest extends PHPUnit_Framework_TestCase
 		//Regex validator
 		$abonne->courrierElectronique = 'na_fuego@hotmail.com';
 		$abonne->statut = 'w';
-		$this->assertFalse($abonne->save());
+		$this->assertFalse(
+			$di->get("modelsManager")->save($abonne)
+		);
 
 		$messages = $abonne->getMessages();
 		$this->assertEquals($messages[0]->getType(), "Regex");
@@ -208,7 +222,9 @@ class ModelsValidatorsTest extends PHPUnit_Framework_TestCase
 		//too_long
 		$abonne->courrierElectronique = 'personwholivesinahutsomewhereinthecloud@hotmail.com';
 		$abonne->statut = 'P';
-		$this->assertFalse($abonne->save());
+		$this->assertFalse(
+			$di->get("modelsManager")->save($abonne)
+		);
 
 		$messages = $abonne->getMessages();
 		$this->assertEquals($messages[0]->getType(), "TooLong");
@@ -218,7 +234,9 @@ class ModelsValidatorsTest extends PHPUnit_Framework_TestCase
 		//too_short
 		$abonne->courrierElectronique = 'a@b.co';
 		$abonne->status = 'P';
-		$this->assertFalse($abonne->save());
+		$this->assertFalse(
+			$di->get("modelsManager")->save($abonne)
+		);
 
 		$messages = $abonne->getMessages();
 		$this->assertEquals($messages[0]->getType(), "TooShort");
@@ -230,7 +248,9 @@ class ModelsValidatorsTest extends PHPUnit_Framework_TestCase
 		$abonne->courrierElectronique = 'fuego?=';
 		$abonne->creeA = null;
 		$abonne->statut = 'P';
-		$this->assertFalse($abonne->save());
+		$this->assertFalse(
+			$di->get("modelsManager")->save($abonne)
+		);
 
 		$this->assertEquals(count($abonne->getMessages()), 2);
 

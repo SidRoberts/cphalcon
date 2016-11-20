@@ -45,7 +45,7 @@ use Phalcon\Mvc\Model\TransactionInterface;
  *     $robot->name       = "WALL·E";
  *     $robot->created_at = date("Y-m-d");
  *
- *     if ($robot->save() === false) {
+ *     if ($modelsManager->save($robot) === false) {
  *         $transaction->rollback("Can't save robot");
  *     }
  *
@@ -55,7 +55,7 @@ use Phalcon\Mvc\Model\TransactionInterface;
  *
  *     $robotPart->type = "head";
  *
- *     if ($robotPart->save() === false) {
+ *     if ($modelsManager->save($robotPart) === false) {
  *         $transaction->rollback("Can't save robot part");
  *     }
  *

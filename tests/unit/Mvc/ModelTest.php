@@ -212,7 +212,7 @@ class ModelTest extends UnitTest
                 $body->head_2_id = 999;
 
                 // PDOException should'n be thrown
-                expect($body->save())->equals(false);
+                expect($this->modelsManager->save($body))->equals(false);
 
                 expect($body->getMessages())->count(1);
                 expect($body->getMessages()[0]->getMessage())->equals('Second head does not exists');
@@ -328,7 +328,7 @@ class ModelTest extends UnitTest
                 $serialized = serialize($robot);
                 $robot = unserialize($serialized);
 
-                expect($robot->save())->true();
+                expect($this->modelsManager->save($robot))->true();
             }
         );
     }
@@ -408,7 +408,8 @@ class ModelTest extends UnitTest
             function () {
                 $robot = new Robots();
 
-                $success = $robot->save(
+                $success = $this->modelsManager->save(
+                    $robot,
                     [
                         "type" => "mechanical",
                         "year" => 2018,
@@ -487,7 +488,8 @@ class ModelTest extends UnitTest
             function () {
                 $robot = new Robotters();
 
-                $success = $robot->save(
+                $success = $this->modelsManager->save(
+                    $robot,
                     [
                         "theType" => "mechanical",
                         "theYear" => 2018,
@@ -611,7 +613,7 @@ class ModelTest extends UnitTest
                 $subscriber->email = 'some@some.com';
                 $subscriber->status = 'I';
 
-                expect($subscriber->save())->true();
+                expect($this->modelsManager->save($subscriber))->true();
                 expect(preg_match('/[0-9]{4}-[0-9]{2}-[0-9]{2}/', $subscriber->created_at))->equals(1);
             }
         );
@@ -630,7 +632,7 @@ class ModelTest extends UnitTest
 
                 $subscriber = $newsSubscribersRepository->findFirst();
 
-                expect($subscriber->delete())->true();
+                expect($this->modelsManager->delete($subscriber))->true();
                 expect($subscriber->status)->equals('D');
                 expect($newsSubscribersRepository->count())->equals($number);
             }
