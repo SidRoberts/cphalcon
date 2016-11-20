@@ -1200,10 +1200,10 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 	 */
 	public function getRelationRecords(<RelationInterface> relation, string! method, <ModelInterface> record, var parameters = null)
 	{
-		var placeholders, referencedModel, intermediateModel,
+		var placeholders, loadedModel, referencedModel, intermediateModel,
 			intermediateFields, joinConditions, fields, builder, extraParameters,
 			conditions, refPosition, field, referencedFields, findParams,
-			findArguments, retrieveMethod, uniqueKey, records, arguments, rows, firstRow;
+			findArguments, retrieveMethod, uniqueKey, records, arguments, rows, firstRow, referencedModelRepository;
 		boolean reusable;
 
 		/**
@@ -1356,11 +1356,15 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 			}
 		}
 
+		let loadedModel = this->load(referencedModel);
+
+		let referencedModelRepository = this->getRepository(get_class(loadedModel));
+
 		/**
 		 * Load the referenced model
 		 * Call the function in the model
 		 */
-		let records = call_user_func_array([this->load(referencedModel), retrieveMethod], arguments);
+		let records = referencedModelRepository->{retrieveMethod}(findParams);
 
 		/**
 		 * Store the result in the cache if it's reusable

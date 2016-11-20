@@ -127,18 +127,26 @@ class ModelsResultsetCacheTest extends PHPUnit_Framework_TestCase
 			));
 		}, true);
 
+		$robotsRepository = $di->get("modelsManager")->getRepository(
+			Robots::class
+		);
+
 		//Find
-		$robots = Robots::find(array(
-			'cache' => array('key' => 'some'),
-			'order' => 'id'
-		));
+		$robots = $robotsRepository->find(
+			array(
+				'cache' => array('key' => 'some'),
+				'order' => 'id'
+			)
+		);
 		$this->assertEquals(count($robots), 3);
 		$this->assertTrue($robots->isFresh());
 
-		$robots = Robots::find(array(
-			'cache' => array('key' => 'some'),
-			'order' => 'id'
-		));
+		$robots = $robotsRepository->find(
+			array(
+				'cache' => array('key' => 'some'),
+				'order' => 'id'
+			)
+		);
 		$this->assertEquals(count($robots), 3);
 		$this->assertFalse($robots->isFresh());
 
@@ -150,9 +158,11 @@ class ModelsResultsetCacheTest extends PHPUnit_Framework_TestCase
 		//Skip this test until someone can shed some light on this
 		if (!$di->get("db") instanceof Phalcon\Db\Adapter\Pdo\Postgresql) {
 			//Aggregate functions like sum, count, etc
-			$robotscount = Robots::count(array(
-				'cache' => array('key' => 'some-count'),
-			));
+			$robotscount = $robotsRepository->count(
+				array(
+					'cache' => array('key' => 'some-count'),
+				)
+			);
 			$this->assertEquals($robotscount, 3);
 
 			//Create a temporary robot to test if the count is cached or fresh
@@ -164,13 +174,20 @@ class ModelsResultsetCacheTest extends PHPUnit_Framework_TestCase
 			$newrobot->text = 'Not cached robot';
 			$newrobot->create();
 
-			$robotscount = Robots::count(array(
-				'cache' => array('key' => 'some-count'),
-			));
+			$robotscount = $robotsRepository->count(
+				array(
+					'cache' => array('key' => 'some-count'),
+				)
+			);
 			$this->assertEquals($robotscount, 3);
 
 			//Delete the temp robot
-			Robots::findFirst("type = 'notcached'")->delete();
+			$notCachedRobot = $robotsRepository->findFirst(
+				array(
+					"type = 'notcached'"
+				)
+			);
+			$notCachedRobot->delete();
 		}
 	}
 
@@ -184,21 +201,29 @@ class ModelsResultsetCacheTest extends PHPUnit_Framework_TestCase
 			));
 		}, true);
 
-		$robots = Robots::find(array(
-			'cache' => array('key' => 'some'),
-			'conditions' => 'id > :id1: and id < :id2:',
-			'bind' => array('id1' => 0, 'id2' => 4),
-			'order' => 'id'
-		));
+		$robotsRepository = $di->get("modelsManager")->getRepository(
+			Robots::class
+		);
+
+		$robots = $robotsRepository->find(
+			array(
+				'cache' => array('key' => 'some'),
+				'conditions' => 'id > :id1: and id < :id2:',
+				'bind' => array('id1' => 0, 'id2' => 4),
+				'order' => 'id'
+			)
+		);
 		$this->assertEquals(count($robots), 3);
 		$this->assertTrue($robots->isFresh());
 
-		$robots = Robots::find(array(
-			'cache' => array('key' => 'some'),
-			'conditions' => 'id > :id1: and id < :id2:',
-			'bind' => array('id1' => 0, 'id2' => 4),
-			'order' => 'id'
-		));
+		$robots = $robotsRepository->find(
+			array(
+				'cache' => array('key' => 'some'),
+				'conditions' => 'id > :id1: and id < :id2:',
+				'bind' => array('id1' => 0, 'id2' => 4),
+				'order' => 'id'
+			)
+		);
 		$this->assertEquals(count($robots), 3);
 		$this->assertFalse($robots->isFresh());
 
@@ -214,25 +239,33 @@ class ModelsResultsetCacheTest extends PHPUnit_Framework_TestCase
 			));
 		}, true);
 
-		$robots = Robots::find(array(
-			'cache' => array(
-				'key' => 'other-some',
-				'lifetime' => 60,
-				'service' => 'otherCache'
-			),
-			'order' => 'id'
-		));
+		$robotsRepository = $di->get("modelsManager")->getRepository(
+			Robots::class
+		);
+
+		$robots = $robotsRepository->find(
+			array(
+				'cache' => array(
+					'key' => 'other-some',
+					'lifetime' => 60,
+					'service' => 'otherCache'
+				),
+				'order' => 'id'
+			)
+		);
 		$this->assertEquals(count($robots), 3);
 		$this->assertTrue($robots->isFresh());
 
-		$robots = Robots::find(array(
-			'cache' => array(
-				'key' => 'other-some',
-				'lifetime' => 60,
-				'service' => 'otherCache'
-			),
-			'order' => 'id'
-		));
+		$robots = $robotsRepository->find(
+			array(
+				'cache' => array(
+					'key' => 'other-some',
+					'lifetime' => 60,
+					'service' => 'otherCache'
+				),
+				'order' => 'id'
+			)
+		);
 		$this->assertEquals(count($robots), 3);
 		$this->assertFalse($robots->isFresh());
 

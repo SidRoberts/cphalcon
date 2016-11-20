@@ -132,7 +132,18 @@ class Uniqueness extends CombinedFieldsValidator
 
 	protected function isUniqueness(<Validation> validation, var field) -> boolean
 	{
-		var values, convert, record, params, className, isModel, isDocument, singleField;
+		var values, convert, record, isModel, isDocument,
+			value, attribute, except,
+			index, params, metaData, primaryField, className, singleField,
+			fieldExcept, singleExcept, notInValues, exceptConditions,
+			dependencyInjector, modelsManager, modelRepository;
+
+		let exceptConditions = [];
+		let index  = 0;
+		let params = [
+			"conditions": [],
+			"bind": []
+		];
 
 		if typeof field != "array" {
 			let singleField = field,

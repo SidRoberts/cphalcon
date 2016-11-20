@@ -20,6 +20,7 @@
 namespace Phalcon\Mvc\Model;
 
 use Phalcon\Db\Column;
+use Phalcon\Di;
 use Phalcon\DiInterface;
 use Phalcon\Mvc\Model\Exception;
 use Phalcon\Di\InjectionAwareInterface;
@@ -30,7 +31,7 @@ use Phalcon\Mvc\Model\ResultsetInterface;
  * Phalcon\Mvc\Model\Criteria
  *
  * This class is used to build the array parameter required by
- * Phalcon\Mvc\Model::find() and Phalcon\Mvc\Model::findFirst()
+ * Phalcon\Mvc\Model\Manager::find() and Phalcon\Mvc\Model\Manager::findFirst()
  * using an object-oriented interface.
  *
  * <code>
@@ -728,13 +729,32 @@ class Criteria implements CriteriaInterface, InjectionAwareInterface
 	 */
 	public function execute() -> <ResultsetInterface>
 	{
-		var model;
+		var model, dependencyInjector, modelsManager, modelRepository;
 
 		let model = this->getModelName();
 		if typeof model != "string" {
 			throw new Exception("Model name must be string");
 		}
 
-		return {model}::find(this->getParams());
+		let dependencyInjector = this->getDI();
+
+		/**
+		 * We use a default DI if the user doesn't define one
+		 */
+		if typeof dependencyInjector != "object" {
+			let dependencyInjector = Di::getDefault();
+		}
+
+		if typeof dependencyInjector != "object" {
+			throw new Exception("A dependency injector container is required to obtain the services related to the ORM");
+		}
+
+		let modelsManager = dependencyInjector->getShared("modelsManager");
+
+		let modelRepository = modelsManager->getRepository(model);
+
+		return modelRepository->find(
+			this->getParams()
+		);
 	}
 }

@@ -132,21 +132,41 @@ class ModelsCriteriaTest extends PHPUnit_Framework_TestCase
 	{
 
 		$personas = Personas::query()->where("estado='I'")->execute();
-		$people = People::find("estado='I'");
+
+		$peopleRepository = $di->get("modelsManager")->getRepository(
+			People::class
+		);
+
+		$people = $peopleRepository->find(
+			[
+				"estado='I'",
+			]
+		);
+
 		$this->assertEquals(count($personas), count($people));
 
 		$personas = Personas::query()->conditions("estado='I'")->execute();
-		$people = People::find("estado='I'");
+
+		$people = $peopleRepository->find(
+			[
+				"estado='I'",
+			]
+		);
+
 		$this->assertEquals(count($personas), count($people));
 
 		$personas = Personas::query()
 			->where("estado='A'")
 			->orderBy("nombres")
 			->execute();
-		$people = People::find(array(
-			"estado='A'",
-			"order" => "nombres"
-		));
+
+		$people = $peopleRepository->find(
+			[
+				"estado='A'",
+				"order" => "nombres"
+			]
+		);
+
 		$this->assertEquals(count($personas), count($people));
 
 		$somePersona = $personas->getFirst();
@@ -159,11 +179,15 @@ class ModelsCriteriaTest extends PHPUnit_Framework_TestCase
 			->orderBy("nombres")
 			->limit(100)
 			->execute();
-		$people = People::find(array(
-			"estado='A'",
-			"order" => "nombres",
-			"limit" => 100
-		));
+
+		$people = $peopleRepository->find(
+			[
+				"estado='A'",
+				"order" => "nombres",
+				"limit" => 100
+			]
+		);
+
 		$this->assertEquals(count($personas), count($people));
 
 		$somePersona = $personas->getFirst();
@@ -178,12 +202,15 @@ class ModelsCriteriaTest extends PHPUnit_Framework_TestCase
 			->limit(100)
 			->execute();
 
-		$people = People::find(array(
-			"estado=?1",
-			"bind" => array(1 => "A"),
-			"order" => "nombres",
-			"limit" => 100
-		));
+		$people = $peopleRepository->find(
+			[
+				"estado=?1",
+				"bind" => array(1 => "A"),
+				"order" => "nombres",
+				"limit" => 100
+			]
+		);
+
 		$this->assertEquals(count($personas), count($people));
 
 		$somePersona = $personas->getFirst();
@@ -198,12 +225,15 @@ class ModelsCriteriaTest extends PHPUnit_Framework_TestCase
 			->limit(100, 10)
 			->execute();
 
-		$people = People::find(array(
-			"estado=?1",
-			"bind" => array(1 => "A"),
-			"order" => "nombres",
-			"limit" => array('number' => 100, 'offset' => 10)
-		));
+		$people = $peopleRepository->find(
+			[
+				"estado=?1",
+				"bind" => array(1 => "A"),
+				"order" => "nombres",
+				"limit" => array('number' => 100, 'offset' => 10),
+			]
+		);
+
 		$this->assertEquals(count($personas), count($people));
 
 		$somePersona = $personas->getFirst();
@@ -217,12 +247,15 @@ class ModelsCriteriaTest extends PHPUnit_Framework_TestCase
 			->limit(100)
 			->execute();
 
-		$people = People::find(array(
-			"estado=:estado:",
-			"bind" => array("estado" => "A"),
-			"order" => "nombres",
-			"limit" => 100
-		));
+		$people = $peopleRepository->find(
+			[
+				"estado=:estado:",
+				"bind" => array("estado" => "A"),
+				"order" => "nombres",
+				"limit" => 100,
+			]
+		);
+
 		$this->assertEquals(count($personas), count($people));
 
 		$somePersona = $personas->getFirst();

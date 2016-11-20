@@ -96,8 +96,11 @@ class ModelsDynamicOperationsTest extends PHPUnit_Framework_TestCase
 
 	protected function _executeTestsNormal($di, &$tracer)
 	{
+		$dynamicPersonasRepository = $di->get("modelsManager")->getRepository(
+			Dynamic\Personas::class
+		);
 
-		$persona = Dynamic\Personas::findFirst();
+		$persona = $dynamicPersonasRepository->findFirst();
 		$this->assertTrue($persona->save());
 
 		$this->assertEquals(count($tracer), 3);
@@ -118,7 +121,11 @@ class ModelsDynamicOperationsTest extends PHPUnit_Framework_TestCase
 
 	protected function _executeTestsRenamed($di, &$tracer)
 	{
-		$personer = Dynamic\Personers::findFirst();
+		$dynamicPersonersRepository = $di->get("modelsManager")->getRepository(
+			Dynamic\Personers::class
+		);
+
+		$personer = $dynamicPersonersRepository->findFirst();
 		$this->assertTrue($personer->save());
 
 		$this->assertEquals(count($tracer), 3);

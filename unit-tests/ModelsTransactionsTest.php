@@ -130,7 +130,11 @@ class ModelsTransactionsTest extends PHPUnit_Framework_TestCase {
 		$success = $connection->delete("personas", "cedula LIKE 'T-Cx%'");
 		$this->assertTrue($success);
 
-		$numPersonas = Personas::count();
+		$personasRepository = $di->get("modelsManager")->getRepository(
+			Personas::class
+		);
+
+		$numPersonas = $personasRepository->count();
 		$this->assertGreaterThan(0, $numPersonas);
 
 		$transactionManager = $di->getShared('transactionManager');
@@ -167,7 +171,7 @@ class ModelsTransactionsTest extends PHPUnit_Framework_TestCase {
 		}
 
 		//Now we check if the records was correctly rolled back
-		$rollbackNumPersonas = Personas::count();
+		$rollbackNumPersonas = $personasRepository->count();
 		$this->assertEquals($numPersonas, $rollbackNumPersonas);
 
 		//Creating another transaction
@@ -203,7 +207,7 @@ class ModelsTransactionsTest extends PHPUnit_Framework_TestCase {
 			//This time we commit the transaction
 			$transaction2->commit();
 
-			$commitNumPersonas = Personas::count();
+			$commitNumPersonas = $personasRepository->count();
 			$this->assertEquals($commitNumPersonas, $numPersonas + 15);
 
 		} catch (Phalcon\Mvc\Model\Transaction\Failed $e) {

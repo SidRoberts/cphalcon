@@ -81,25 +81,49 @@ class ModelsResultsetCacheStaticTest extends PHPUnit_Framework_TestCase
 			));
 		};
 
-		$robot = Cacheable\Robots::findFirst(2);
+		$cacheableRobotsRepository = $di->get("modelsManager")->getRepository(
+			Cacheable\Robots::class
+		);
+
+		$robot = $cacheableRobotsRepository->findFirst(
+			[
+				2,
+			]
+		);
 		$this->assertEquals(get_class($robot), 'Cacheable\Robots');
 
-		$robot = Cacheable\Robots::findFirst(2);
+		$robot = $cacheableRobotsRepository->findFirst(
+			[
+				2,
+			]
+		);
 		$this->assertEquals(get_class($robot), 'Cacheable\Robots');
 
-		$robot = Cacheable\Robots::findFirst(array('id = 2'));
+		$robot = $cacheableRobotsRepository->findFirst(
+			array('id = 2')
+		);
 		$this->assertEquals(get_class($robot), 'Cacheable\Robots');
 
-		$robot = Cacheable\Robots::findFirst(array('id = 2'));
+		$robot = $cacheableRobotsRepository->findFirst(
+			array('id = 2')
+		);
 		$this->assertEquals(get_class($robot), 'Cacheable\Robots');
 
-		$robot = Cacheable\Robots::findFirst(array('order' => 'id DESC'));
+		$robot = $cacheableRobotsRepository->findFirst(
+			array('order' => 'id DESC')
+		);
 		$this->assertEquals(get_class($robot), 'Cacheable\Robots');
 
-		$robot = Cacheable\Robots::findFirst(array('order' => 'id DESC'));
+		$robot = $cacheableRobotsRepository->findFirst(
+			array('order' => 'id DESC')
+		);
 		$this->assertEquals(get_class($robot), 'Cacheable\Robots');
 
-		$robot = Cacheable\Robots::findFirst(1);
+		$robot = $cacheableRobotsRepository->findFirst(
+			[
+				1
+			]
+		);
 		$this->assertEquals(get_class($robot), 'Cacheable\Robots');
 
 		$robotParts = $robot->getRobotsParts();

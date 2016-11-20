@@ -756,206 +756,6 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 	}
 
 	/**
-	 * Query for a set of records that match the specified conditions
-	 *
-	 * <code>
-	 * // How many robots are there?
-	 * $robots = Robots::find();
-	 *
-	 * echo "There are ", count($robots), "\n";
-	 *
-	 * // How many mechanical robots are there?
-	 * $robots = Robots::find(
-	 *     "type = 'mechanical'"
-	 * );
-	 *
-	 * echo "There are ", count($robots), "\n";
-	 *
-	 * // Get and print virtual robots ordered by name
-	 * $robots = Robots::find(
-	 *     [
-	 *         "type = 'virtual'",
-	 *         "order" => "name",
-	 *     ]
-	 * );
-	 *
-	 * foreach ($robots as $robot) {
-	 *	 echo $robot->name, "\n";
-	 * }
-	 *
-	 * // Get first 100 virtual robots ordered by name
-	 * $robots = Robots::find(
-	 *     [
-	 *         "type = 'virtual'",
-	 *         "order" => "name",
-	 *         "limit" => 100,
-	 *     ]
-	 * );
-	 *
-	 * foreach ($robots as $robot) {
-	 *	 echo $robot->name, "\n";
-	 * }
-	 * </code>
-	 */
-	public static function find(var parameters = null) -> <ResultsetInterface>
-	{
-		var params, builder, query, bindParams, bindTypes, cache, resultset, hydration, dependencyInjector, manager;
-
-		let dependencyInjector = Di::getDefault();
-		let manager = <ManagerInterface> dependencyInjector->getShared("modelsManager");
-
-		if typeof parameters != "array" {
-			let params = [];
-			if parameters !== null {
-				let params[] = parameters;
-			}
-		} else {
-			let params = parameters;
-		}
-
-		/**
-		 * Builds a query with the passed parameters
-		 */
-		let builder = manager->createBuilder(params);
-		builder->from(get_called_class());
-
-		let query = builder->getQuery();
-
-		/**
-		 * Check for bind parameters
-		 */
-		if fetch bindParams, params["bind"] {
-
-			if typeof bindParams == "array" {
-				query->setBindParams(bindParams, true);
-			}
-
-			if fetch bindTypes, params["bindTypes"] {
-				if typeof bindTypes == "array" {
-					query->setBindTypes(bindTypes, true);
-				}
-			}
-		}
-
-		/**
-		 * Pass the cache options to the query
-		 */
-		if fetch cache, params["cache"] {
-			query->cache(cache);
-		}
-
-		/**
-		 * Execute the query passing the bind-params and casting-types
-		 */
-		let resultset = query->execute();
-
-		/**
-		 * Define an hydration mode
-		 */
-		if typeof resultset == "object" {
-			if fetch hydration, params["hydration"] {
-				resultset->setHydrateMode(hydration);
-			}
-		}
-
-		return resultset;
-	}
-
-	/**
-	 * Query the first record that matches the specified conditions
-	 *
-	 * <code>
-	 * // What's the first robot in robots table?
-	 * $robot = Robots::findFirst();
-	 *
-	 * echo "The robot name is ", $robot->name;
-	 *
-	 * // What's the first mechanical robot in robots table?
-	 * $robot = Robots::findFirst(
-	 *     "type = 'mechanical'"
-	 * );
-	 *
-	 * echo "The first mechanical robot name is ", $robot->name;
-	 *
-	 * // Get first virtual robot ordered by name
-	 * $robot = Robots::findFirst(
-	 *     [
-	 *         "type = 'virtual'",
-	 *         "order" => "name",
-	 *     ]
-	 * );
-	 *
-	 * echo "The first virtual robot name is ", $robot->name;
-	 * </code>
-	 *
-	 * @param string|array parameters
-	 * @return static
-	 */
-	public static function findFirst(var parameters = null) -> <Model>
-	{
-		var params, builder, query, bindParams, bindTypes, cache,
-			dependencyInjector, manager;
-
-		let dependencyInjector = Di::getDefault();
-		let manager = <ManagerInterface> dependencyInjector->getShared("modelsManager");
-
-		if typeof parameters != "array" {
-			let params = [];
-			if parameters !== null {
-				let params[] = parameters;
-			}
-		} else {
-			let params = parameters;
-		}
-
-		/**
-		 * Builds a query with the passed parameters
-		 */
-		let builder = manager->createBuilder(params);
-		builder->from(get_called_class());
-
-		/**
-		 * We only want the first record
-		 */
-		builder->limit(1);
-
-		let query = builder->getQuery();
-
-		/**
-		 * Check for bind parameters
-		 */
-		if fetch bindParams, params["bind"] {
-
-			if typeof bindParams == "array" {
-				query->setBindParams(bindParams, true);
-			}
-
-			if fetch bindTypes, params["bindTypes"] {
-				if typeof bindTypes == "array" {
-					query->setBindTypes(bindTypes, true);
-				}
-			}
-		}
-
-		/**
-		 * Pass the cache options to the query
-		 */
-		if fetch cache, params["cache"] {
-			query->cache(cache);
-		}
-
-		/**
-		 * Return only the first row
-		 */
-		query->setUniqueRow(true);
-
-		/**
-		 * Execute the query passing the bind-params and casting-types
-		 */
-		return query->execute();
-	}
-
-	/**
 	 * Create a criteria for a specific model
 	 */
 	public static function query(<DiInterface> dependencyInjector = null) -> <Criteria>
@@ -1131,249 +931,6 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 		}
 
 		return false;
-	}
-
-	/**
-	 * Generate a PHQL SELECT statement for an aggregate
-	 *
-	 * @param string function
-	 * @param string alias
-	 * @param array parameters
-	 * @return \Phalcon\Mvc\Model\ResultsetInterface
-	 */
-	protected static function _groupResult(string! functionName, string! alias, var parameters) -> <ResultsetInterface>
-	{
-		var params, distinctColumn, groupColumn, columns,
-			bindParams, bindTypes, resultset, cache, firstRow, groupColumns,
-			builder, query, dependencyInjector, manager;
-
-		let dependencyInjector = Di::getDefault();
-		let manager = <ManagerInterface> dependencyInjector->getShared("modelsManager");
-
-		if typeof parameters != "array" {
-			let params = [];
-			if parameters !== null {
-				let params[] = parameters;
-			}
-		} else {
-			let params = parameters;
-		}
-
-		if !fetch groupColumn, params["column"] {
-			let groupColumn = "*";
-		}
-
-		/**
-		 * Builds the columns to query according to the received parameters
-		 */
-		if fetch distinctColumn, params["distinct"] {
-			let columns = functionName . "(DISTINCT " . distinctColumn . ") AS " . alias;
-		} else {
-			if fetch groupColumns, params["group"] {
-				let columns = groupColumns . ", " . functionName . "(" . groupColumn . ") AS " . alias;
-			} else {
-				let columns = functionName . "(" . groupColumn . ") AS " . alias;
-			}
-		}
-
-		/**
-		 * Builds a query with the passed parameters
-		 */
-		let builder = manager->createBuilder(params);
-		builder->columns(columns);
-		builder->from(get_called_class());
-
-		let query = builder->getQuery();
-
-		/**
-		 * Check for bind parameters
-		 */
-		let bindParams = null, bindTypes = null;
-		if fetch bindParams, params["bind"] {
-			fetch bindTypes, params["bindTypes"];
-		}
-
-		/**
-		 * Pass the cache options to the query
-		 */
-		if fetch cache, params["cache"] {
-			query->cache(cache);
-		}
-
-		/**
-		 * Execute the query
-		 */
-		let resultset = query->execute(bindParams, bindTypes);
-
-		/**
-		 * Return the full resultset if the query is grouped
-		 */
-		if isset params["group"] {
-			return resultset;
-		}
-
-		/**
-		 * Return only the value in the first result
-		 */
-		let firstRow = resultset->getFirst();
-		return firstRow->{alias};
-	}
-
-	/**
-	 * Counts how many records match the specified conditions
-	 *
-	 * <code>
-	 * // How many robots are there?
-	 * $number = Robots::count();
-	 *
-	 * echo "There are ", $number, "\n";
-	 *
-	 * // How many mechanical robots are there?
-	 * $number = Robots::count("type = 'mechanical'");
-	 *
-	 * echo "There are ", $number, " mechanical robots\n";
-	 * </code>
-	 *
-	 * @param array parameters
-	 * @return mixed
-	 */
-	public static function count(var parameters = null)
-	{
-		var result;
-
-		let result = self::_groupResult("COUNT", "rowcount", parameters);
-		if typeof result == "string" {
-			return (int) result;
-		}
-		return result;
-	}
-
-	/**
-	 * Calculates the sum on a column for a result-set of rows that match the specified conditions
-	 *
-	 * <code>
-	 * // How much are all robots?
-	 * $sum = Robots::sum(
-	 *     [
-	 *         "column" => "price",
-	 *     ]
-	 * );
-	 *
-	 * echo "The total price of robots is ", $sum, "\n";
-	 *
-	 * // How much are mechanical robots?
-	 * $sum = Robots::sum(
-	 *     [
-	 *         "type = 'mechanical'",
-	 *         "column" => "price",
-	 *     ]
-	 * );
-	 *
-	 * echo "The total price of mechanical robots is  ", $sum, "\n";
-	 * </code>
-	 *
-	 * @param array parameters
-	 * @return mixed
-	 */
-	public static function sum(var parameters = null)
-	{
-		return self::_groupResult("SUM", "sumatory", parameters);
-	}
-
-	/**
-	 * Returns the maximum value of a column for a result-set of rows that match the specified conditions
-	 *
-	 * <code>
-	 * // What is the maximum robot id?
-	 * $id = Robots::maximum(
-	 *     [
-	 *         "column" => "id",
-	 *     ]
-	 * );
-	 *
-	 * echo "The maximum robot id is: ", $id, "\n";
-	 *
-	 * // What is the maximum id of mechanical robots?
-	 * $sum = Robots::maximum(
-	 *     [
-	 *         "type = 'mechanical'",
-	 *         "column" => "id",
-	 *     ]
-	 * );
-	 *
-	 * echo "The maximum robot id of mechanical robots is ", $id, "\n";
-	 * </code>
-	 *
-	 * @param array parameters
-	 * @return mixed
-	 */
-	public static function maximum(var parameters = null)
-	{
-		return self::_groupResult("MAX", "maximum", parameters);
-	}
-
-	/**
-	 * Returns the minimum value of a column for a result-set of rows that match the specified conditions
-	 *
-	 * <code>
-	 * // What is the minimum robot id?
-	 * $id = Robots::minimum(
-	 *     [
-	 *         "column" => "id",
-	 *     ]
-	 * );
-	 *
-	 * echo "The minimum robot id is: ", $id;
-	 *
-	 * // What is the minimum id of mechanical robots?
-	 * $sum = Robots::minimum(
-	 *     [
-	 *         "type = 'mechanical'",
-	 *         "column" => "id",
-	 *     ]
-	 * );
-	 *
-	 * echo "The minimum robot id of mechanical robots is ", $id;
-	 * </code>
-	 *
-	 * @param array parameters
-	 * @return mixed
-	 */
-	public static function minimum(parameters = null)
-	{
-		return self::_groupResult("MIN", "minimum", parameters);
-	}
-
-	/**
-	 * Returns the average value on a column for a result-set of rows matching the specified conditions
-	 *
-	 * <code>
-	 * // What's the average price of robots?
-	 * $average = Robots::average(
-	 *     [
-	 *         "column" => "price",
-	 *     ]
-	 * );
-	 *
-	 * echo "The average price is ", $average, "\n";
-	 *
-	 * // What's the average price of mechanical robots?
-	 * $average = Robots::average(
-	 *     [
-	 *         "type = 'mechanical'",
-	 *         "column" => "price",
-	 *     ]
-	 * );
-	 *
-	 * echo "The average price of mechanical robots is ", $average, "\n";
-	 * </code>
-	 *
-	 * @param array parameters
-	 * @return double
-	 */
-	public static function average(var parameters = null)
-	{
-		return self::_groupResult("AVG", "average", parameters);
 	}
 
 	/**
@@ -1607,7 +1164,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 	{
 		var manager, belongsTo, foreignKey, relation, conditions,
 			position, bindParams, extraConditions, message, fields,
-			referencedFields, field, referencedModel, value, allowNulls;
+			referencedFields, field, referencedModel, value, allowNulls, referencedModelRepository;
 		int action, numberNull;
 		boolean error, validateWithNulls;
 
@@ -1709,11 +1266,13 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 				}
 			}
 
+			let referencedModelRepository = manager->getRepository(get_class(referencedModel));
+
 			/**
 			 * We don't trust the actual values in the object and pass the values using bound parameters
 			 * Let's make the checking
 			 */
-			if !validateWithNulls && !referencedModel->count([join(" AND ", conditions), "bind": bindParams]) {
+			if !validateWithNulls && !referencedModelRepository->count([join(" AND ", conditions), "bind": bindParams]) {
 
 				/**
 				 * Get the user message or produce a new one
@@ -1757,7 +1316,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 		var manager, relations, relation, foreignKey,
 			resultset, conditions, bindParams, referencedModel,
 			referencedFields, fields, field, position, value,
-			extraConditions;
+			extraConditions, referencedModelRepository;
 		int action;
 
 		/**
@@ -1833,11 +1392,13 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 				let conditions[] = extraConditions;
 			}
 
+			let referencedModelRepository = manager->getRepository(relation->getReferencedModel());
+
 			/**
 			 * We don't trust the actual values in the object and then we're passing the values using bound parameters
 			 * Let's make the checking
 			 */
-			let resultset = referencedModel->find([
+			let resultset = referencedModelRepository->find([
 				join(" AND ", conditions),
 				"bind": bindParams
 			]);
@@ -1863,7 +1424,7 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 		var manager, relations, foreignKey, relation,
 			relationClass, referencedModel, fields, referencedFields,
 			conditions, bindParams,position, field,
-			value, extraConditions, message;
+			value, extraConditions, message, relationClassRepository;
 		int action;
 
 		/**
@@ -1930,7 +1491,6 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 					let conditions[] = "[" . referencedFields[position] . "] = ?" . position,
 						bindParams[] = value;
 				}
-
 			} else {
 				fetch value, this->{fields};
 				let conditions[] = "[" . referencedFields . "] = ?0",
@@ -1944,11 +1504,13 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 				let conditions[] = extraConditions;
 			}
 
+			let relationClassRepository = manager->getRepository(relationClass);
+
 			/**
 			 * We don't trust the actual values in the object and then we're passing the values using bound parameters
 			 * Let's make the checking
 			 */
-			if referencedModel->count([join(" AND ", conditions), "bind": bindParams]) {
+			if relationClassRepository->count([join(" AND ", conditions), "bind": bindParams]) {
 
 				/**
 				 * Create a new message
@@ -4148,7 +3710,8 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 	protected final static function _invokeFinder(method, arguments)
 	{
 		var extraMethod, type, modelName, value, model,
-			attributes, field, extraMethodFirst, metaData;
+			attributes, field, extraMethodFirst, metaData,
+			dependencyInjector, manager, repository;
 
 		let extraMethod = null;
 
@@ -4225,13 +3788,20 @@ abstract class Model implements EntityInterface, ModelInterface, ResultInterface
 			}
 		}
 
+		let dependencyInjector = Di::getDefault();
+		let manager = <ManagerInterface> dependencyInjector->getShared("modelsManager");
+
+		let repository = manager->getRepository(modelName);
+
 		/**
 		 * Execute the query
 		 */
-		return {modelName}::{type}([
-			"conditions": "[" . field . "] = ?0",
-			"bind"		: [value]
-		]);
+		return repository->{type}(
+			[
+				"conditions": "[" . field . "] = ?0",
+				"bind":       [value]
+			]
+		);
 	}
 
 	/**

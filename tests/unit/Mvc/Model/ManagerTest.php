@@ -59,7 +59,13 @@ class ManagerTest extends UnitTest
                 expect($modelsManager->getNamespaceAliases())
                     ->equals(['AlbumORama' => 'Phalcon\Test\Models\AlbumORama']);
 
-                foreach (Albums::find() as $album) {
+                $albumsRepository = $this->modelsManager->getRepository(
+                    Albums::class
+                );
+
+                $albums = $albumsRepository->find();
+
+                foreach ($albums as $album) {
                     expect($album->artist)->isInstanceOf('Phalcon\Test\Models\AlbumORama\Artists');
                 }
             }

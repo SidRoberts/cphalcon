@@ -38,7 +38,8 @@ use Phalcon\Mvc\Model\ResultsetInterface;
  * <code>
  *
  * // Using a standard foreach
- * $robots = Robots::find(
+ * $robots = $modelsManager->find(
+ *     Robots::class,
  *     [
  *         "type = 'virtual'",
  *         "order" => "name",
@@ -50,7 +51,8 @@ use Phalcon\Mvc\Model\ResultsetInterface;
  * }
  *
  * // Using a while
- * $robots = Robots::find(
+ * $robots = $modelsManager->find(
+ *     Robots::class,
  *     [
  *         "type = 'virtual'",
  *         "order" => "name",
@@ -605,7 +607,10 @@ abstract class Resultset
 	 * Calls jsonSerialize on each object if present
      *
      *<code>
-     * $robots = Robots::find();
+     * $robots = $modelsManager->find(
+     *     Robots::class
+     * );
+     *
      * echo json_encode($robots);
      *</code>
      *

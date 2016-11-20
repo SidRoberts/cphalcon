@@ -31,9 +31,13 @@ use Phalcon\Paginator\Adapter;
  * <code>
  * use Phalcon\Paginator\Adapter\Model;
  *
+ * $robots = $modelsManager->find(
+ *     Robots::class
+ * );
+ *
  * $paginator = new Model(
  *     [
- *         "data"  => Robots::find(),
+ *         "data"  => $robots,
  *         "limit" => 25,
  *         "page"  => $currentPage,
  *     ]

@@ -72,7 +72,7 @@ class ModelsRelationsMagicTest extends PHPUnit_Framework_TestCase
 
 		$di->set('db', $connection, true);
 
-		$this->_executeQueryRelated();
+		$this->_executeQueryRelated($di);
 		$this->_executeSaveRelatedBelongsTo($connection);
 	}
 
@@ -86,7 +86,7 @@ class ModelsRelationsMagicTest extends PHPUnit_Framework_TestCase
 			return new Phalcon\Db\Adapter\Pdo\Postgresql($configPostgresql);
 		}, true);
 
-		$this->_executeQueryRelated();
+		$this->_executeQueryRelated($di);
 		$this->_executeSaveRelatedBelongsTo($connection);
 	}
 
@@ -100,15 +100,18 @@ class ModelsRelationsMagicTest extends PHPUnit_Framework_TestCase
 			return new Phalcon\Db\Adapter\Pdo\Sqlite($configSqlite);
 		}, true);
 
-		$this->_executeQueryRelated();
+		$this->_executeQueryRelated($di);
 		$this->_executeSaveRelatedBelongsTo($connection);
 	}*/
 
-	public function _executeQueryRelated()
+	public function _executeQueryRelated($di)
 	{
+		$albumORamaAlbumsRepository = $di->get("modelsManager")->getRepository(
+			AlbumORama\Albums::class
+		);
 
 		//Belongs to
-		$album = AlbumORama\Albums::findFirst();
+		$album = $albumORamaAlbumsRepository->findFirst();
 		$this->assertEquals(get_class($album), 'AlbumORama\Albums');
 
 		$artist = $album->artist;

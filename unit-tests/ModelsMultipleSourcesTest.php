@@ -66,6 +66,8 @@ class ModelsMultipleSourcesTest extends PHPUnit_Framework_TestCase
 			require 'unit-tests/config.db.php';
 			return new Phalcon\Db\Adapter\Pdo\Mysql($configMysql);
 		}, true);
+
+		return $di;
 	}
 
 	public function testSourcesStatic()
@@ -76,9 +78,13 @@ class ModelsMultipleSourcesTest extends PHPUnit_Framework_TestCase
 			return;
 		}
 
-		$this->_prepareDI();
+		$di = $this->_prepareDI();
 
-		$robot = Store\Robots::findFirst();
+		$storeRobotsRepository = $di->get("modelsManager")->getRepository(
+			Store\Robots::class
+		);
+
+		$robot = $storeRobotsRepository->findFirst();
 		$this->assertTrue(is_object($robot));
 		$this->assertTrue($robot->save());
 

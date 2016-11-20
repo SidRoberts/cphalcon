@@ -111,9 +111,17 @@ class Issue1801 extends PHPUnit_Framework_TestCase
 	{
 		Phalcon\Mvc\Model::setup(array('columnRenaming' => false));
 
-		$robot = Robots::findFirst(1);
+		$robotsRepository = $di->get("modelsManager")->getRepository(
+			Robots::class
+		);
+
+		$robot = $robotsRepository->findFirst(
+			array(1)
+		);
 		$di->get('modelsMetadata')->reset();
-		$robot = Robots::findFirst(1);
+		$robot = $robotsRepository->findFirst(
+			array(1)
+		);
 		$this->assertTrue(true);
 	}
 }

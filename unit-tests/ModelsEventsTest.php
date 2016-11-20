@@ -71,6 +71,8 @@ class ModelsEventsTest extends PHPUnit_Framework_TestCase
 			require 'unit-tests/config.db.php';
 			return new Phalcon\Db\Adapter\Pdo\Mysql($configMysql);
 		}, true);
+
+		return $di;
 	}
 
 	public function testEventsFetch()
@@ -83,9 +85,13 @@ class ModelsEventsTest extends PHPUnit_Framework_TestCase
 
 		$trace = array();
 
-		$this->_prepareDI($trace);
+		$di = $this->_prepareDI($trace);
 
-		$robot = GossipRobots::findFirst();
+		$gossipRobotsRepository = $di->get("modelsManager")->getRepository(
+			GossipRobots::class
+		);
+
+		$robot = $gossipRobotsRepository->findFirst();
 
 		$robot->trace = &$trace;
 
@@ -160,9 +166,13 @@ class ModelsEventsTest extends PHPUnit_Framework_TestCase
 
 		$trace = array();
 
-		$this->_prepareDI($trace);
+		$di = $this->_prepareDI($trace);
 
-		$robot = GossipRobots::findFirst();
+		$gossipRobotsRepository = $di->get("modelsManager")->getRepository(
+			GossipRobots::class
+		);
+
+		$robot = $gossipRobotsRepository->findFirst();
 
 		$robot->trace = &$trace;
 
@@ -216,9 +226,13 @@ class ModelsEventsTest extends PHPUnit_Framework_TestCase
 
 		$trace = array();
 
-		$this->_prepareDI($trace);
+		$di = $this->_prepareDI($trace);
 
-		$robot = GossipRobots::findFirst();
+		$gossipRobotsRepository = $di->get("modelsManager")->getRepository(
+			GossipRobots::class
+		);
+
+		$robot = $gossipRobotsRepository->findFirst();
 
 		$robot->trace = &$trace;
 

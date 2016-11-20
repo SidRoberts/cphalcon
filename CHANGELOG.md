@@ -1,3 +1,6 @@
+# [4.0.0](https://github.com/phalcon/cphalcon/releases/tag/v4.0.0) (2016-XX-XX)
+- Moved `Model::find()`, `Model::findFirst()`, `Model::count()`, `Model::sum()`, `Model::maximum()`, `Model::minimum()` and `Model::average()` to Model Repository [#12317](https://github.com/phalcon/cphalcon/issues/12317)
+
 # [3.2.0](https://github.com/phalcon/cphalcon/releases/tag/v3.2.0) (2017-XX-XX)
 - `Phalcon\Mvc\Model\Criteria::addWhere`, `Phalcon\Debug::getMajorVersion`, `Phalcon\Dispatcher::setModelBinding`, `Phalcon\Tag::resetInput`, `Phalcon\Mvc\Model\Validator::__construct` will now trigger `E_DEPREACATED` on usage
 - Added Factory Adapter loaders [#11001](https://github.com/phalcon/cphalcon/issues/11001)

@@ -130,7 +130,11 @@ class ModelsHydrationTest extends PHPUnit_Framework_TestCase
 
 		$number = 0;
 
-		$robots = Robots::find();
+		$robotsRepository = $di->get("modelsManager")->getRepository(
+			Robots::class
+		);
+
+		$robots = $robotsRepository->find();
 
 		foreach ($robots as $robot) {
 			$this->assertTrue(is_object($robot));
@@ -163,7 +167,13 @@ class ModelsHydrationTest extends PHPUnit_Framework_TestCase
 
 		$number = 0;
 
-		$people = People::find(array('limit' => 33));
+		$peopleRepository = $di->get("modelsManager")->getRepository(
+			People::class
+		);
+
+		$people = $peopleRepository->find(
+			array('limit' => 33)
+		);
 
 		foreach ($people as $person) {
 			$this->assertTrue(is_object($person));
@@ -200,7 +210,11 @@ class ModelsHydrationTest extends PHPUnit_Framework_TestCase
 
 		$number = 0;
 
-		$robots = Robotters::find();
+		$robottersRepository = $di->get("modelsManager")->getRepository(
+			Robotters::class
+		);
+
+		$robots = $robottersRepository->find();
 
 		foreach ($robots as $robot) {
 			$this->assertTrue(is_object($robot));
@@ -233,7 +247,13 @@ class ModelsHydrationTest extends PHPUnit_Framework_TestCase
 
 		$number = 0;
 
-		$people = Personers::find(array('limit' => 33));
+		$personersRepository = $di->get("modelsManager")->getRepository(
+			Personers::class
+		);
+
+		$people = $personersRepository->find(
+			array('limit' => 33)
+		);
 
 		foreach ($people as $person) {
 			$this->assertTrue(is_object($person));
@@ -346,7 +366,11 @@ class ModelsHydrationTest extends PHPUnit_Framework_TestCase
 
 		$number = 0;
 
-		$robots = Robots::find();
+		$robotsRepository = $di->get("modelsManager")->getRepository(
+			Robots::class
+		);
+
+		$robots = $robotsRepository->find();
 
 		foreach ($robots as $robot) {
 			$this->assertTrue(is_object($robot));
@@ -379,7 +403,13 @@ class ModelsHydrationTest extends PHPUnit_Framework_TestCase
 
 		$number = 0;
 
-		$people = People::find(array('limit' => 33));
+		$peopleRepository = $di->get("modelsManager")->getRepository(
+			People::class
+		);
+
+		$people = $peopleRepository->find(
+			array('limit' => 33)
+		);
 
 		foreach ($people as $person) {
 			$this->assertTrue(is_object($person));
@@ -418,7 +448,11 @@ class ModelsHydrationTest extends PHPUnit_Framework_TestCase
 
 		$number = 0;
 
-		$robots = Robotters::find();
+		$robottersRepository = $di->get("modelsManager")->getRepository(
+			Robotters::class
+		);
+
+		$robots = $robottersRepository->find();
 
 		foreach ($robots as $robot) {
 			$this->assertTrue(is_object($robot));
@@ -451,7 +485,13 @@ class ModelsHydrationTest extends PHPUnit_Framework_TestCase
 
 		$number = 0;
 
-		$people = Personers::find(array('limit' => 33));
+		$personersRepository = $di->get("modelsManager")->getRepository(
+			Personers::class
+		);
+
+		$people = $personersRepository->find(
+			array('limit' => 33)
+		);
 
 		foreach ($people as $person) {
 			$this->assertTrue(is_object($person));

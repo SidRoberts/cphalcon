@@ -175,7 +175,16 @@ class Validation
      */
     protected function uniqueness2(UnitTester $I)
     {
-        $model = Subscriptores::findFirst();
+        /** @var \Phalcon\Di\FactoryDefault $di */
+        $di = Di::getDefault();
+
+        $modelsManager = $di->getShared('modelsManager');
+
+        $subscriptoresRepository = $modelsManager->getRepository(
+            Subscriptores::class
+        );
+
+        $model = $subscriptoresRepository->findFirst();
         $model->save($model->toArray());
 
         $I->assertTrue($model->validation());

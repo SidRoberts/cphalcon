@@ -54,7 +54,8 @@ use Phalcon\Cache\FrontendInterface;
  * if ($robots === null) {
  *     // $robots is null due to cache expiration or data do not exist
  *     // Make the database call and populate the variable
- *     $robots = Robots::find(
+ *     $robots = $modelsManager->find(
+ *         Robots::class,
  *         [
  *             "order" => "id",
  *         ]

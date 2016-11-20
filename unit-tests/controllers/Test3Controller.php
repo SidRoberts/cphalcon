@@ -25,7 +25,12 @@ class Test3Controller extends Phalcon\Controller
 
 	public function queryAction()
 	{
-		$robot = Robots::findFirst();
+		$robotsRepository = $this->modelsManager->getRepository(
+			Robots::class
+		);
+
+		$robot = $robotsRepository->findFirst();
+
 		$this->view->setVar("name", $robot->name);
 	}
 

@@ -151,7 +151,11 @@ class ModelsForeignKeysTest extends PHPUnit_Framework_TestCase
 
 		//Reverse foreign keys
 
-		$robot = Robots::findFirst();
+		$robotsRepository = $di->get("modelsManager")->getRepository(
+			Robots::class
+		);
+
+		$robot = $robotsRepository->findFirst();
 		$this->assertNotEquals($robot, false);
 
 		$this->assertFalse($robot->delete());
@@ -167,7 +171,11 @@ class ModelsForeignKeysTest extends PHPUnit_Framework_TestCase
 
 		$this->assertEquals($robot->getMessages(), $messages);
 
-		$part = Parts::findFirst();
+		$partsRepository = $di->get("modelsManager")->getRepository(
+			Parts::class
+		);
+
+		$part = $partsRepository->findFirst();
 		$this->assertNotEquals($part, false);
 
 		$this->assertFalse($part->delete());
@@ -220,8 +228,12 @@ class ModelsForeignKeysTest extends PHPUnit_Framework_TestCase
 
 		$this->assertEquals($robottersDeles->getMessages(), $messages);
 
+		$robottersRepository = $di->get("modelsManager")->getRepository(
+			Robotters::class
+		);
+
 		//Reverse foreign keys with renaming
-		$robotter = Robotters::findFirst();
+		$robotter = $robottersRepository->findFirst();
 		$this->assertNotEquals($robotter, false);
 
 		$this->assertFalse($robotter->delete());
@@ -237,7 +249,11 @@ class ModelsForeignKeysTest extends PHPUnit_Framework_TestCase
 
 		$this->assertEquals($robotter->getMessages(), $messages);
 
-		$dele = Deles::findFirst();
+		$delesRepository = $di->get("modelsManager")->getRepository(
+			Deles::class
+		);
+
+		$dele = $delesRepository->findFirst();
 		$this->assertNotEquals($dele, false);
 
 		$this->assertFalse($dele->delete());

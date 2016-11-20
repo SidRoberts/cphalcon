@@ -53,7 +53,12 @@ class ModelTest extends UnitTest
                 $modelsManager = $this->setUpModelsManager();
 
                 $modelsManager->registerNamespaceAlias('AlbumORama', 'Phalcon\Test\Models\AlbumORama');
-                $album = Albums::findFirst();
+
+                $albumsRepository = $this->modelsManager->getRepository(
+                    Albums::class
+                );
+
+                $album = $albumsRepository->findFirst();
 
                 $album->artist->name = 'NotArtist';
                 expect($album->artist->name)->equals($album->Artist->name);
@@ -79,11 +84,21 @@ class ModelTest extends UnitTest
         $this->specify(
             'The Model::find with empty conditions + bind and limit return wrong result',
             function () {
-                $album = Albums::find([
-                    'conditions' => '',
-                    'bind'       => [],
-                    'limit'      => 10
-                ]);
+                if (!ini_get('opcache.enable_cli')) {
+                    $this->markTestSkipped("The " . __METHOD__ . " requires enabled opcache in CLI mode");
+                }
+
+                $albumsRepository = $this->modelsManager->getRepository(
+                    Albums::class
+                );
+
+                $album = $albumsRepository->find(
+                    [
+                        'conditions' => '',
+                        'bind'       => [],
+                        'limit'      => 10
+                    ]
+                );
 
                 expect($album)->isInstanceOf(Simple::class);
                 expect($album->getFirst())->isInstanceOf(Albums::class);
@@ -108,7 +123,12 @@ class ModelTest extends UnitTest
         $this->specify(
             'The Model::hasMany by using multi relation column does not work as expected',
             function () {
-                $list = Packages::find();
+                $packagesRepository = $this->modelsManager->getRepository(
+                    Packages::class
+                );
+
+                $list = $packagesRepository->find();
+
                 foreach ($list as $item) {
                     expect($item)->isInstanceOf(Packages::class);
                     expect($item->details)->isInstanceOf(Simple::class);
@@ -132,10 +152,16 @@ class ModelTest extends UnitTest
         $this->specify(
             'Reusing relations does not work correctly',
             function () {
-                $customers = Customers::find([
-                    'document_id = :did: AND status = :status: AND customer_id <> :did:',
-                    'bind' => ['did' => 1, 'status' => 'A']
-                ]);
+                $customersRepository = $this->modelsManager->getRepository(
+                    Customers::class
+                );
+
+                $customers = $customersRepository->find(
+                    [
+                        'document_id = :did: AND status = :status: AND customer_id <> :did:',
+                        'bind' => ['did' => 1, 'status' => 'A']
+                    ]
+                );
 
                 expect($customers)->isInstanceOf(Simple::class);
                 expect(count($customers))->equals(2);
@@ -227,7 +253,13 @@ class ModelTest extends UnitTest
             'Snapshot data should be saved while saving model to cache',
             function () {
                 $cache = new Apc(new Data(['lifetime' => 20]));
-                $robot = Robots::findFirst();
+
+                $robotsRepository = $this->modelsManager->getRepository(
+                    Robots::class
+                );
+
+                $robot = $robotsRepository->findFirst();
+
                 expect($robot)->isInstanceOf(Robots::class);
                 expect($robot->getSnapshotData())->notEmpty();
                 $cache->save('robot', $robot);
@@ -252,7 +284,11 @@ class ModelTest extends UnitTest
         $this->specify(
             "Model getters and setters don't work",
             function () {
-                $robot = Boutique\Robots::findFirst();
+                $boutiqueRobotsRepository = $this->modelsManager->getRepository(
+                    Boutique\Robots::class
+                );
+
+                $robot = $boutiqueRobotsRepository->findFirst();
 
                 $testText = "executeSetGet Test";
                 $robot->assign(["text" => $testText]);
@@ -283,7 +319,11 @@ class ModelTest extends UnitTest
         $this->specify(
             "Models aren't serialized or unserialized properly",
             function () {
-                $robot = Robots::findFirst();
+                $robotsRepository = $this->modelsManager->getRepository(
+                    Robots::class
+                );
+
+                $robot = $robotsRepository->findFirst();
 
                 $serialized = serialize($robot);
                 $robot = unserialize($serialized);
@@ -299,7 +339,12 @@ class ModelTest extends UnitTest
             "Single models aren't JSON serialized or JSON unserialized properly",
             function () {
                 // Single model object json serialization
-                $robot = Robots::findFirst();
+                $robotsRepository = $this->modelsManager->getRepository(
+                    Robots::class
+                );
+
+                $robot = $robotsRepository->findFirst();
+
                 $json = json_encode($robot);
 
                 expect(is_string($json))->true();
@@ -312,7 +357,11 @@ class ModelTest extends UnitTest
             "Model resultsets aren't JSON serialized or JSON unserialized properly",
             function () {
                 // Result-set serialization
-                $robots = Robots::find();
+                $robotsRepository = $this->modelsManager->getRepository(
+                    Robots::class
+                );
+
+                $robots = $robotsRepository->find();
 
                 $json = json_encode($robots);
 
@@ -326,7 +375,12 @@ class ModelTest extends UnitTest
             "Single row resultsets aren't JSON serialized or JSON unserialized properly",
             function () {
                 $modelsManager = $this->setUpModelsManager();
-                $robot = Robots::findFirst();
+
+                $robotsRepository = $this->modelsManager->getRepository(
+                    Robots::class
+                );
+
+                $robot = $robotsRepository->findFirst();
 
                 // Single row serialization
                 $result = $modelsManager->executeQuery("SELECT id FROM " . Robots::class . " LIMIT 1");
@@ -568,13 +622,17 @@ class ModelTest extends UnitTest
         $this->specify(
             "Soft Delete model behavior doesn't work",
             function () {
-                $number = Subscribers::count();
+                $newsSubscribersRepository = $this->modelsManager->getRepository(
+                    \Phalcon\Test\Models\News\Subscribers::class
+                );
 
-                $subscriber = Subscribers::findFirst();
+                $number = $newsSubscribersRepository->count();
+
+                $subscriber = $newsSubscribersRepository->findFirst();
 
                 expect($subscriber->delete())->true();
                 expect($subscriber->status)->equals('D');
-                expect(Subscribers::count())->equals($number);
+                expect($newsSubscribersRepository->count())->equals($number);
             }
         );
     }
@@ -587,6 +645,10 @@ class ModelTest extends UnitTest
         $this->specify(
             'The field default value is empty string and is determined to be null',
             function () {
+                $personersRepository = $this->modelsManager->getRepository(
+                    Personers::class
+                );
+
                 $personers = new Personers([
                     'borgerId'     => 'id-' . time() . rand(1, 99),
                     'slagBorgerId' => 1,
@@ -596,23 +658,23 @@ class ModelTest extends UnitTest
 
                 //  test field for create
                 $personers->navnes = '';
-                $created = $personers->create();
+                $created = $personersRepository->create($personers);
 
                 expect($created)->true();
 
                 //  write something to not null default '' field
                 $personers->navnes = 'save something!';
 
-                $saved = $personers->save();
+                $saved = $personersRepository->save($personers);
                 expect($saved)->true();
 
                 //  test field for update
                 $personers->navnes = '';
-                $saved = $personers->save();
+                $saved = $personersRepository->save($personers);
 
                 expect($saved)->true();
 
-                $personers->delete();
+                $personersRepository->delete($personers);
             }
         );
     }

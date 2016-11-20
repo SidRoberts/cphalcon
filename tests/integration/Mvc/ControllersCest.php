@@ -79,8 +79,14 @@ class ControllersCest
         $I->assertInstanceOf('Phalcon\Di', $dispatcher->getDI());
         $I->haveServiceInDi('dispatcher', $dispatcher);
 
+        $modelsManager = $I->grabServiceFromDi('modelsManager');
+
+        $peopleRepository = $modelsManager->getRepository(
+            People::class
+        );
+
         // Model to test with
-        $model = People::findFirst();
+        $model = $peopleRepository->findFirst();
 
         $dispatcher->setControllerName('test10');
         $dispatcher->setActionName('view');

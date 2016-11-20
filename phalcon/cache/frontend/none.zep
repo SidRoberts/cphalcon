@@ -50,7 +50,8 @@ use Phalcon\Cache\FrontendInterface;
  * if ($robots === null) {
  *     // This cache doesn't perform any expiration checking, so the data is always expired
  *     // Make the database call and populate the variable
- *     $robots = Robots::find(
+ *     $robots = $modelsManager->find(
+ *         Robots::class,
  *         [
  *             "order" => "id",
  *         ]

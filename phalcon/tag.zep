@@ -968,10 +968,17 @@ class Tag
 	 * Builds a HTML SELECT tag using a Phalcon\Mvc\Model resultset as options
 	 *
 	 *<code>
+	 * $robots = $modelsManager->find(
+	 *     Robots::class,
+	 *     [
+	 *         "type = 'mechanical'",
+	 *     ]
+	 * );
+	 *
 	 * echo Phalcon\Tag::select(
 	 *     [
 	 *         "robotId",
-	 *         Robots::find("type = "mechanical""),
+	 *         $robots,
 	 *         "using" => ["id", "name"],
 	 *     ]
 	 * );

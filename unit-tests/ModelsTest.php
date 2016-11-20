@@ -164,6 +164,12 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$db = $di->getShared('db');
 		$this->_prepareDb($di->getShared('db'));
 
+		$modelsManager = $di->getShared('modelsManager');
+
+		$issue1534Repository = $modelsManager->getRepository(
+			Issue_1534::class
+		);
+
 		$this->assertTrue($db->delete('issue_1534'));
 
 		$product = new Issue_1534();
@@ -174,9 +180,12 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$product->brand     = new \Phalcon\Db\RawValue('default');
 		$product->sort      = new \Phalcon\Db\RawValue('default');
 		$this->assertTrue($product->save());
-		$this->assertEquals(1, Issue_1534::count());
+		$this->assertEquals(
+			1,
+			$issue1534Repository->count()
+		);
 
-		$entry = Issue_1534::findFirst();
+		$entry = $issue1534Repository->findFirst();
 		$this->assertEquals('bb', $entry->language);
 		$this->assertEquals('bb', $entry->language2);
 		$this->assertEquals('0', $entry->sort);
@@ -192,23 +201,32 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$product->brand     = 'brand';
 		$product->sort      = 1;
 		$this->assertTrue($product->save());
-		$this->assertEquals(1, Issue_1534::count());
+		$this->assertEquals(
+			1,
+			$issue1534Repository->count()
+		);
 
-		$entry = Issue_1534::findFirst();
+		$entry = $issue1534Repository->findFirst();
 		$entry->brand    = new \Phalcon\Db\RawValue('default');
 		$entry->sort     = new \Phalcon\Db\RawValue('default');
 		$this->assertTrue($entry->save());
-		$this->assertEquals(1, Issue_1534::count());
+		$this->assertEquals(
+			1,
+			$issue1534Repository->count()
+		);
 
-		$entry = Issue_1534::findFirst();
+		$entry = $issue1534Repository->findFirst();
 		$this->assertEquals('0', $entry->sort);
 		$this->assertTrue($entry->brand === NULL);
 
 		$entry->language2 = new \Phalcon\Db\RawValue('default(language)');
 		$this->assertTrue($entry->save());
-		$this->assertEquals(1, Issue_1534::count());
+		$this->assertEquals(
+			1,
+			$issue1534Repository->count()
+		);
 
-		$entry = Issue_1534::findFirst();
+		$entry = $issue1534Repository->findFirst();
 		$this->assertEquals('bb', $entry->language2);
 		$this->assertEquals('0', $entry->sort);
 		$this->assertTrue($entry->brand === NULL);
@@ -223,23 +241,26 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$product->brand    = 'brand';
 		$product->sort     = 1;
 		$this->assertTrue($product->save());
-		$this->assertEquals(1, Issue_1534::count());
+		$this->assertEquals(
+			1,
+			$issue1534Repository->count()
+		);
 
 
-		$entry = Issue_1534::findFirst();
+		$entry = $issue1534Repository->findFirst();
 		$this->assertEquals('bb', $entry->language);
 		$this->assertEquals('bb', $entry->language2);
 
 		$entry->language2 = 'en';
 		$this->assertTrue($entry->save());
 
-		$entry = Issue_1534::findFirst();
+		$entry = $issue1534Repository->findFirst();
 		$this->assertEquals('en', $entry->language2);
 
 		$entry->language2 = new \Phalcon\Db\RawValue('default');
 		$this->assertTrue($entry->save());
 
-		$entry = Issue_1534::findFirst();
+		$entry = $issue1534Repository->findFirst();
 		$this->assertEquals('bb', $entry->language2);
 
 
@@ -254,7 +275,11 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 			'phqlLiterals' => false,
 		));
 
-		$people = People::findFirst();
+		$peopleRepository = $di->get("modelsManager")->getRepository(
+			People::class
+		);
+
+		$people = $peopleRepository->findFirst();
 		$this->assertTrue(is_object($people));
 		$this->assertEquals(get_class($people), 'People');
 	}
@@ -264,110 +289,195 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 
 		$this->_prepareDb($di->getShared('db'));
 
+		$modelsManager = $di->getShared('modelsManager');
+
+		$peopleRepository = $modelsManager->getRepository(
+			People::class
+		);
+
+		$personasRepository = $modelsManager->getRepository(
+			Personas::class
+		);
+
+		$robotsRepository = $modelsManager->getRepository(
+			Robots::class
+		);
+
 		//Count tests
-		$this->assertEquals(People::count(), Personas::count());
+		$this->assertEquals(
+			$peopleRepository->count(),
+			$personasRepository->count()
+		);
 
 		$params = array();
-		$this->assertEquals(People::count($params), Personas::count($params));
+		$this->assertEquals(
+			$peopleRepository->count($params),
+			$personasRepository->count($params)
+		);
 
 		$params = array("estado='I'");
-		$this->assertEquals(People::count($params), Personas::count($params));
+		$this->assertEquals(
+			$peopleRepository->count($params),
+			$personasRepository->count($params)
+		);
 
-		$params = "estado='I'";
-		$this->assertEquals(People::count($params), Personas::count($params));
+		$params = ["estado='I'"];
+		$this->assertEquals(
+			$peopleRepository->count($params),
+			$personasRepository->count($params)
+		);
 
 		$params = array("conditions" => "estado='I'");
-		$this->assertEquals(People::count($params), Personas::count($params));
+		$this->assertEquals(
+			$peopleRepository->count($params),
+			$personasRepository->count($params)
+		);
 
 		//Find first
-		$people = People::findFirst();
+		$people = $peopleRepository->findFirst();
 		$this->assertTrue(is_object($people));
 		$this->assertEquals(get_class($people), 'People');
 
-		$persona = Personas::findFirst();
+		$persona = $personasRepository->findFirst();
 		$this->assertEquals($people->nombres, $persona->nombres);
 		$this->assertEquals($people->estado, $persona->estado);
 
-		$people = People::findFirst("estado='I'");
+		$people = $peopleRepository->findFirst(
+			[
+				"estado='I'",
+			]
+		);
 		$this->assertTrue(is_object($people));
 
-		$persona = Personas::findFirst("estado='I'");
+		$persona = $personasRepository->findFirst(
+			[
+				"estado='I'",
+			]
+		);
 		$this->assertTrue(is_object($persona));
 
 		$this->assertEquals($people->nombres, $persona->nombres);
 		$this->assertEquals($people->estado, $persona->estado);
 
-		$people = People::findFirst(array("estado='I'"));
-		$persona = Personas::findFirst(array("estado='I'"));
+		$people = $peopleRepository->findFirst(
+			[
+				"estado='I'",
+			]
+		);
+		$persona = $personasRepository->findFirst(
+			[
+				"estado='I'",
+			]
+		);
 		$this->assertEquals($people->nombres, $persona->nombres);
 		$this->assertEquals($people->estado, $persona->estado);
 
 		$params = array("conditions" => "estado='I'");
-		$people = People::findFirst($params);
-		$persona = Personas::findFirst($params);
+		$people = $peopleRepository->findFirst($params);
+		$persona = $personasRepository->findFirst($params);
 		$this->assertEquals($people->nombres, $persona->nombres);
 		$this->assertEquals($people->estado, $persona->estado);
 
 		$params = array("conditions" => "estado='A'", "order" => "nombres");
-		$people = People::findFirst($params);
-		$persona = Personas::findFirst($params);
+		$people = $peopleRepository->findFirst($params);
+		$persona = $personasRepository->findFirst($params);
 		$this->assertEquals($people->nombres, $persona->nombres);
 		$this->assertEquals($people->estado, $persona->estado);
 
 		$params = array("estado='A'", "order" => "nombres DESC", "limit" => 30);
-		$people = People::findFirst($params);
-		$persona = Personas::findFirst($params);
+		$people = $peopleRepository->findFirst($params);
+		$persona = $personasRepository->findFirst($params);
 		$this->assertEquals($people->nombres, $persona->nombres);
 		$this->assertEquals($people->estado, $persona->estado);
 
 		$params = array("estado=?1", "bind" => array(1 => 'A'), "order" => "nombres DESC", "limit" => 30);
-		$people = People::findFirst($params);
-		$persona = Personas::findFirst($params);
+		$people = $peopleRepository->findFirst($params);
+		$persona = $personasRepository->findFirst($params);
 		$this->assertEquals($people->nombres, $persona->nombres);
 		$this->assertEquals($people->estado, $persona->estado);
 
 		$params = array("estado=:estado:", "bind" => array("estado" => 'A'), "order" => "nombres DESC", "limit" => 30);
-		$people = People::findFirst($params);
-		$persona = Personas::findFirst($params);
+		$people = $peopleRepository->findFirst($params);
+		$persona = $personasRepository->findFirst($params);
 		$this->assertEquals($people->nombres, $persona->nombres);
 		$this->assertEquals($people->estado, $persona->estado);
 
-		$robot = Robots::findFirst(1);
+		$robot = $robotsRepository->findFirst(
+			[
+				1,
+			]
+		);
 		$this->assertEquals(get_class($robot), 'Robots');
 
 		//Find tests
-		$personas = Personas::find();
-		$people = People::find();
+		$personas = $personasRepository->find();
+		$people = $peopleRepository->find();
 		$this->assertEquals(count($personas), count($people));
 
-		$personas = Personas::find("estado='I'");
-		$people = People::find("estado='I'");
+		$personas = $personasRepository->find(
+			[
+				"estado='I'",
+			]
+		);
+		$people = $peopleRepository->find(
+			[
+				"estado='I'",
+			]
+		);
 		$this->assertEquals(count($personas), count($people));
 
-		$personas = Personas::find(array("estado='I'"));
-		$people = People::find(array("estado='I'"));
+		$personas = $personasRepository->find(
+			array("estado='I'")
+		);
+		$people = $peopleRepository->find(
+			array("estado='I'")
+		);
 		$this->assertEquals(count($personas), count($people));
 
-		$personas = Personas::find(array("estado='A'", "order" => "nombres"));
-		$people = People::find(array("estado='A'", "order" => "nombres"));
+		$personas = $personasRepository->find(
+			array(
+				"estado='A'",
+				"order" => "nombres",
+			)
+		);
+		$people = $peopleRepository->find(
+			array(
+				"estado='A'",
+				"order" => "nombres",
+			)
+		);
 		$this->assertEquals(count($personas), count($people));
 
-		$personas = Personas::find(array("estado='A'", "order" => "nombres", "limit" => 100));
-		$people = People::find(array("estado='A'", "order" => "nombres", "limit" => 100));
+		$personas = $personasRepository->find(
+			array(
+				"estado='A'",
+				"order" => "nombres",
+				"limit" => 100,
+			)
+		);
+		$people = $peopleRepository->find(
+			array(
+				"estado='A'",
+				"order" => "nombres",
+				"limit" => 100,
+			)
+		);
 		$this->assertEquals(count($personas), count($people));
 
 		$params = array("estado=?1", "bind" => array(1 => "A"), "order" => "nombres", "limit" => 100);
-		$personas = Personas::find($params);
-		$people = People::find($params);
+		$personas = $personasRepository->find($params);
+		$people = $peopleRepository->find($params);
 		$this->assertEquals(count($personas), count($people));
 
 		$params = array("estado=:estado:", "bind" => array("estado" => "A"), "order" => "nombres", "limit" => 100);
-		$personas = Personas::find($params);
-		$people = People::find($params);
+		$personas = $personasRepository->find($params);
+		$people = $peopleRepository->find($params);
 		$this->assertEquals(count($personas), count($people));
 
 		$number = 0;
-		$peoples = Personas::find(array("conditions" => "estado='A'", "order" => "nombres", "limit" => 20));
+		$peoples = $personasRepository->find(
+			array("conditions" => "estado='A'", "order" => "nombres", "limit" => 20)
+		);
 		foreach($peoples as $people){
 			$number++;
 		}
@@ -422,7 +532,11 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$this->assertTrue($persona->save());
 
 		//Check correct save
-		$persona = Personas::findFirst(array("estado='X'"));
+		$persona = $personasRepository->findFirst(
+			[
+				"estado='X'",
+			]
+		);
 		$this->assertNotEquals($persona, false);
 		$this->assertEquals($persona->nombres, 'LOST LOST');
 		$this->assertEquals($persona->estado, 'X');
@@ -433,7 +547,11 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$this->assertTrue($persona->update());
 
 		//Checking correct update
-		$persona = Personas::findFirst(array("estado='X'"));
+		$persona = $personasRepository->findFirst(
+			[
+				"estado='X'",
+			]
+		);
 		$this->assertNotEquals($persona, false);
 		$this->assertEquals($persona->cupo, 150000);
 		$this->assertEquals($persona->telefono, '123');
@@ -445,7 +563,9 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		)));
 
 		//Checking correct update
-		$persona = Personas::findFirst(array("estado='X'"));
+		$persona = $personasRepository->findFirst(
+			array("estado='X'")
+		);
 		$this->assertNotEquals($persona, false);
 		$this->assertEquals($persona->nombres, 'LOST UPDATE');
 		$this->assertEquals($persona->telefono, '2121');
@@ -471,16 +591,23 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		)));
 
 		//Grouping
-		$difEstados = People::count(array("distinct" => "estado"));
+		$difEstados = $peopleRepository->count(
+			array("distinct" => "estado")
+		);
 		$this->assertEquals($difEstados, 3);
 
-		$group = People::count(array("group" => "estado"));
+		$group = $peopleRepository->count(
+			array("group" => "estado")
+		);
 		$this->assertEquals(count($group), 3);
 
 		//Deleting
-		$before = People::count();
+		$before = $peopleRepository->count();
 		$this->assertTrue($persona->delete());
-		$this->assertEquals($before - 1, People::count());
+		$this->assertEquals(
+			$before - 1,
+			$peopleRepository->count()
+		);
 
 		//Assign
 		$persona = new Personas();
@@ -538,7 +665,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 
 
 		//Refresh
-		$persona = Personas::findFirst();
+		$persona = $personasRepository->findFirst();
 
 		$personaData = $persona->toArray();
 
@@ -559,7 +686,12 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$parts->save();
 
 		// Issue 1506
-		$persona = Personas::findFirst(array('columns' => 'nombres, telefono, estado', "nombres = 'LOST CREATE'"));
+		$persona = $personasRepository->findFirst(
+			[
+				'columns' => 'nombres, telefono, estado',
+				"nombres = 'LOST CREATE'",
+			]
+		);
 		$expected = array(
 			'nombres'  => 'LOST CREATE',
 			'telefono' => '1',
@@ -574,96 +706,136 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 
 		$this->_prepareDb($di->getShared('db'));
 
+		$modelsManager = $di->getShared('modelsManager');
+
+		$personersRepository = $di->get("modelsManager")->getRepository(
+			Personers::class
+		);
+
 		$params = array();
-		$this->assertTrue(Personers::count($params) > 0);
+		$this->assertTrue(
+			$personersRepository->count($params) > 0
+		);
 
 		$params = array("status = 'I'");
-		$this->assertTrue(Personers::count($params) > 0);
-
-		$params = "status='I'";
-		$this->assertTrue(Personers::count($params) > 0);
+		$this->assertTrue(
+			$personersRepository->count($params) > 0
+		);
 
 		$params = array("conditions" => "status='I'");
-		$this->assertTrue(Personers::count($params) > 0);
+		$this->assertTrue(
+			$personersRepository->count($params) > 0
+		);
 
 		//Find first
-		$personer = Personers::findFirst();
+		$personer = $personersRepository->findFirst();
 		$this->assertTrue(is_object($personer));
 		$this->assertEquals(get_class($personer), 'Personers');
 		$this->assertTrue(isset($personer->navnes));
 		$this->assertTrue(isset($personer->status));
 
-		$personer = Personers::findFirst("status = 'I'");
+		$personer = $personersRepository->findFirst(
+			[
+				"status='I'",
+			]
+		);
 		$this->assertTrue(is_object($personer));
 		$this->assertTrue(isset($personer->navnes));
 		$this->assertTrue(isset($personer->status));
 
-		$personer = Personers::findFirst(array("status='I'"));
+		$personer = $personersRepository->findFirst(
+			[
+				"status='I'",
+			]
+		);
 		$this->assertTrue(is_object($personer));
 		$this->assertTrue(isset($personer->navnes));
 		$this->assertTrue(isset($personer->status));
 
 		$params = array("conditions" => "status='I'");
-		$personer = Personers::findFirst($params);
+		$personer = $personersRepository->findFirst($params);
 		$this->assertTrue(is_object($personer));
 		$this->assertTrue(isset($personer->navnes));
 		$this->assertTrue(isset($personer->status));
 
 		$params = array("conditions" => "status='A'", "order" => "navnes");
-		$personer = Personers::findFirst($params);
+		$personer = $personersRepository->findFirst($params);
 		$this->assertTrue(is_object($personer));
 		$this->assertTrue(isset($personer->navnes));
 		$this->assertTrue(isset($personer->status));
 
 		$params = array("status='A'", "order" => "navnes DESC", "limit" => 30);
-		$personer = Personers::findFirst($params);
+		$personer = $personersRepository->findFirst($params);
 		$this->assertTrue(is_object($personer));
 		$this->assertTrue(isset($personer->navnes));
 		$this->assertTrue(isset($personer->status));
 
 		$params = array("status=?1", "bind" => array(1 => 'A'), "order" => "navnes DESC", "limit" => 30);
-		$personer = Personers::findFirst($params);
+		$personer = $personersRepository->findFirst($params);
 		$this->assertTrue(is_object($personer));
 		$this->assertTrue(isset($personer->navnes));
 		$this->assertTrue(isset($personer->status));
 
 		$params = array("status=:status:", "bind" => array("status" => 'A'), "order" => "navnes DESC", "limit" => 30);
-		$personer = Personers::findFirst($params);
+		$personer = $personersRepository->findFirst($params);
 		$this->assertTrue(is_object($personer));
 		$this->assertTrue(isset($personer->navnes));
 		$this->assertTrue(isset($personer->status));
 
-		$robotter = Robotters::findFirst(1);
+		$robottersRepository = $di->get("modelsManager")->getRepository(
+			Robotters::class
+		);
+
+		$robotter = $robottersRepository->findFirst(
+			array(
+				1,
+			)
+		);
 		$this->assertEquals(get_class($robotter), 'Robotters');
 
 		//Find tests
-		$personers = Personers::find();
+		$personers = $personersRepository->find();
 		$this->assertTrue(count($personers) > 0);
 
-		$personers = Personers::find("status='I'");
+		$personers = $personersRepository->find(
+			[
+				"status='I'",
+			]
+		);
 		$this->assertTrue(count($personers) > 0);
 
-		$personers = Personers::find(array("status='I'"));
+		$personers = $personersRepository->find(
+			[
+				"status='I'",
+			]
+		);
 		$this->assertTrue(count($personers) > 0);
 
-		$personers = Personers::find(array("status='I'", "order" => "navnes"));
+		$personers = $personersRepository->find(array("status='I'", "order" => "navnes"));
 		$this->assertTrue(count($personers) > 0);
 
 		$params = array("status='I'", "order" => "navnes", "limit" => 100);
-		$personers = Personers::find($params);
+		$personers = $personersRepository->find($params);
 		$this->assertTrue(count($personers) > 0);
 
 		$params = array("status=?1", "bind" => array(1 => "A"), "order" => "navnes", "limit" => 100);
-		$personers = Personers::find($params);
+		$personers = $personersRepository->find($params);
 		$this->assertTrue(count($personers) > 0);
 
 		$params = array("status=:status:", "bind" => array('status' => "A"), "order" => "navnes", "limit" => 100);
-		$personers = Personers::find($params);
+		$personers = $personersRepository->find($params);
 		$this->assertTrue(count($personers) > 0);
 
 		//Traverse the cursor
 		$number = 0;
-		$personers = Personers::find(array("conditions" => "status='A'", "order" => "navnes", "limit" => 20));
+
+		$personers = $personersRepository->find(
+			array(
+				"conditions" => "status='A'",
+				"order" => "navnes",
+				"limit" => 20
+			)
+		);
 		foreach($personers as $personer){
 			$number++;
 		}
@@ -718,7 +890,11 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$this->assertTrue($personer->save());
 
 		//Check correct save
-		$personer = Personers::findFirst(array("status='X'"));
+		$personer = $personersRepository->findFirst(
+			[
+				"status='X'",
+			]
+		);
 		$this->assertNotEquals($personer, false);
 		$this->assertEquals($personer->navnes, 'LOST LOST');
 		$this->assertEquals($personer->status, 'X');
@@ -729,7 +905,9 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$this->assertTrue($personer->update());
 
 		//Checking correct update
-		$personer = Personers::findFirst(array("status='X'"));
+		$personer = $personersRepository->findFirst(
+			array("status='X'")
+		);
 		$this->assertNotEquals($personer, false);
 		$this->assertEquals($personer->kredit, 150000);
 		$this->assertEquals($personer->telefon, '123');
@@ -741,7 +919,9 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		)));
 
 		//Checking correct update
-		$personer = Personers::findFirst(array("status='X'"));
+		$personer = $personersRepository->findFirst(
+			array("status='X'")
+		);
 		$this->assertNotEquals($personer, false);
 		$this->assertEquals($personer->navnes, 'LOST UPDATE');
 		$this->assertEquals($personer->telefon, '2121');
@@ -767,9 +947,12 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		)));
 
 		//Deleting
-		$before = Personers::count();
+		$before = $personersRepository->count();
 		$this->assertTrue($personer->delete());
-		$this->assertEquals($before - 1, Personers::count());
+		$this->assertEquals(
+			$before - 1,
+			$personersRepository->count()
+		);
 
 		//Assign
 		$personer = new Personers();
@@ -798,7 +981,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals($personer->toArray(), $expected);
 
 		//Refresh
-		$personer = Personers::findFirst();
+		$personer = $personersRepository->findFirst();
 		$personerData = $personer->toArray();
 
 		$personer->assign(array(

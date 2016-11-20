@@ -52,10 +52,17 @@ class RedisCest
         /** @var \Phalcon\Mvc\Model\MetaDataInterface $md */
         $md = $I->grabServiceFromDi('modelsMetadata');
 
+        /** @var \Phalcon\Mvc\Model\ManagerInterface $modelsManager */
+        $modelsManager = $I->grabServiceFromDi('modelsManager');
+
         $md->reset();
         $I->assertTrue($md->isEmpty());
 
-        Robots::findFirst();
+        $robotsRepository = $modelsManager->getRepository(
+            Robots::class
+        );
+
+        $robotsRepository->findFirst();
 
         $I->assertEquals(
             $this->data['meta-robots-robots'],
