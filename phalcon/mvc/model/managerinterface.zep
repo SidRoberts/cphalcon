@@ -320,4 +320,5 @@ interface ManagerInterface
 	 */
 	public function getRelationByAlias(string modelName, string alias);
 
+	public function getRepository(string! modelClass) -> <RepositoryInterface>;
 }

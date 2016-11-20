@@ -1724,4 +1724,15 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 		phalcon_orm_destroy_cache();
 		Query::clean();
 	}
+
+
+
+	public function getRepository(string! modelClass) -> <RepositoryInterface>
+	{
+		var repository;
+
+		let repository = new Repository(modelClass, this);
+
+		return repository;
+	}
 }
