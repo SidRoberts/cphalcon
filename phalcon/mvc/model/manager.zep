@@ -2143,7 +2143,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 		 * Check if there is virtual foreign keys with cascade action
 		 */
 		if globals_get("orm.virtual_foreign_keys") {
-			if model->_checkForeignKeysReverseCascade() === false {
+			if this->_checkForeignKeysReverseCascade(model) === false {
 				return false;
 			}
 		}
@@ -2847,6 +2847,113 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 				model->_cancelOperation();
 			}
 			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Reads both "hasMany" and "hasOne" relations and checks the virtual foreign keys (cascade) when deleting records
+	 */
+	protected final function _checkForeignKeysReverseCascade(<ModelInterface> model) -> boolean
+	{
+		var manager, relations, relation, foreignKey,
+			resultset, conditions, bindParams, referencedModel,
+			referencedFields, fields, field, position, value,
+			extraConditions, referencedModelRepository;
+		int action;
+
+		/**
+		 * Get the models manager
+		 */
+		let manager = <ManagerInterface> model->getModelsManager();
+
+		/**
+		 * We check if some of the hasOne/hasMany relations is a foreign key
+		 */
+		let relations = manager->getHasOneAndHasMany(model);
+
+		for relation in relations {
+
+			/**
+			 * Check if the relation has a virtual foreign key
+			 */
+			let foreignKey = relation->getForeignKey();
+			if foreignKey === false {
+				continue;
+			}
+
+			/**
+			 * By default action is restrict
+			 */
+			let action = Relation::NO_ACTION;
+
+			/**
+			 * Try to find a different action in the foreign key's options
+			 */
+			if typeof foreignKey == "array" {
+				if isset foreignKey["action"] {
+					let action = (int) foreignKey["action"];
+				}
+			}
+
+			/**
+			 * Check only if the operation is restrict
+			 */
+			if action != Relation::ACTION_CASCADE {
+				continue;
+			}
+
+			/**
+			 * Load a plain instance from the models manager
+			 */
+			let referencedModel = manager->load(relation->getReferencedModel());
+
+			let fields = relation->getFields(),
+				referencedFields = relation->getReferencedFields();
+
+			/**
+			 * Create the checking conditions. A relation can has many fields or a single one
+			 */
+			let conditions = [], bindParams = [];
+
+			if typeof fields == "array" {
+				for position, field in fields {
+					fetch value, model->{field};
+					let conditions[] = "[". referencedFields[position] . "] = ?" . position,
+						bindParams[] = value;
+				}
+			} else {
+				fetch value, model->{fields};
+				let conditions[] = "[" . referencedFields . "] = ?0",
+					bindParams[] = value;
+			}
+
+			/**
+			 * Check if the virtual foreign key has extra conditions
+			 */
+			if fetch extraConditions, foreignKey["conditions"] {
+				let conditions[] = extraConditions;
+			}
+
+			let referencedModelRepository = manager->getRepository(relation->getReferencedModel());
+
+			/**
+			 * We don't trust the actual values in the object and then we're passing the values using bound parameters
+			 * Let's make the checking
+			 */
+			let resultset = referencedModelRepository->find([
+				join(" AND ", conditions),
+				"bind": bindParams
+			]);
+
+			/**
+			 * Delete the resultset
+			 * Stop the operation if needed
+			 */
+			if resultset->delete() === false {
+				return false;
+			}
 		}
 
 		return true;
