@@ -2040,7 +2040,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 		 * Check if deleting the record violates a virtual foreign key
 		 */
 		if globals_get("orm.virtual_foreign_keys") {
-			if model->_checkForeignKeysReverseRestrict() === false {
+			if this->_checkForeignKeysReverseRestrict(model) === false {
 				return false;
 			}
 		}
@@ -2954,6 +2954,133 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 			if resultset->delete() === false {
 				return false;
 			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Reads both "hasMany" and "hasOne" relations and checks the virtual foreign keys (restrict) when deleting records
+	 */
+	protected final function _checkForeignKeysReverseRestrict(<ModelInterface> model) -> boolean
+	{
+		boolean error;
+		var manager, relations, foreignKey, relation,
+			relationClass, referencedModel, fields, referencedFields,
+			conditions, bindParams,position, field,
+			value, extraConditions, message, relationClassRepository;
+		int action;
+
+		/**
+		 * Get the models manager
+		 */
+		let manager = <ManagerInterface> model->getModelsManager();
+
+		/**
+		 * We check if some of the hasOne/hasMany relations is a foreign key
+		 */
+		let relations = manager->getHasOneAndHasMany(model);
+
+		let error = false;
+		for relation in relations {
+
+			/**
+			 * Check if the relation has a virtual foreign key
+			 */
+			let foreignKey = relation->getForeignKey();
+			if foreignKey === false {
+				continue;
+			}
+
+			/**
+			 * By default action is restrict
+			 */
+			let action = Relation::ACTION_RESTRICT;
+
+			/**
+			 * Try to find a different action in the foreign key's options
+			 */
+			if typeof foreignKey == "array" {
+				if isset foreignKey["action"] {
+					let action = (int) foreignKey["action"];
+				}
+			}
+
+			/**
+			 * Check only if the operation is restrict
+			 */
+			if action != Relation::ACTION_RESTRICT {
+				continue;
+			}
+
+			let relationClass = relation->getReferencedModel();
+
+			/**
+			 * Load a plain instance from the models manager
+			 */
+			let referencedModel = manager->load(relationClass);
+
+			let fields = relation->getFields(),
+				referencedFields = relation->getReferencedFields();
+
+			/**
+			 * Create the checking conditions. A relation can has many fields or a single one
+			 */
+			let conditions = [], bindParams = [];
+
+			if typeof fields == "array" {
+
+				for position, field in fields {
+					fetch value, model->{field};
+					let conditions[] = "[" . referencedFields[position] . "] = ?" . position,
+						bindParams[] = value;
+				}
+			} else {
+				fetch value, model->{fields};
+				let conditions[] = "[" . referencedFields . "] = ?0",
+					bindParams[] = value;
+			}
+
+			/**
+			 * Check if the virtual foreign key has extra conditions
+			 */
+			if fetch extraConditions, foreignKey["conditions"] {
+				let conditions[] = extraConditions;
+			}
+
+			let relationClassRepository = manager->getRepository(relationClass);
+
+			/**
+			 * We don't trust the actual values in the object and then we're passing the values using bound parameters
+			 * Let's make the checking
+			 */
+			if relationClassRepository->count([join(" AND ", conditions), "bind": bindParams]) {
+
+				/**
+				 * Create a new message
+				 */
+				if !fetch message, foreignKey["message"] {
+					let message = "Record is referenced by model " . relationClass;
+				}
+
+				/**
+				 * Create a message
+				 */
+				model->appendMessage(new Message(message, fields, "ConstraintViolation"));
+				let error = true;
+				break;
+			}
+		}
+
+		/**
+		 * Call validation fails event
+		 */
+		if error === true {
+			if globals_get("orm.events") {
+				model->fireEvent("onValidationFails");
+				model->_cancelOperation();
+			}
+			return false;
 		}
 
 		return true;
