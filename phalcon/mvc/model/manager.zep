@@ -2203,7 +2203,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 		 * Check for Virtual foreign keys
 		 */
 		if globals_get("orm.virtual_foreign_keys") {
-			if model->_checkForeignKeysRestrict() === false {
+			if this->_checkForeignKeysRestrict(model) === false {
 				return false;
 			}
 		}
@@ -2697,6 +2697,158 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 		 * Commit the implicit transaction
 		 */
 		connection->commit(nesting);
+		return true;
+	}
+
+	/**
+	 * Reads "belongs to" relations and check the virtual foreign keys when inserting or updating records
+	 * to verify that inserted/updated values are present in the related entity
+	 */
+	protected final function _checkForeignKeysRestrict(<ModelInterface> model) -> boolean
+	{
+		var manager, belongsTo, foreignKey, relation, conditions,
+			position, bindParams, extraConditions, message, fields,
+			referencedFields, field, referencedModel, value, allowNulls, referencedModelRepository;
+		int action, numberNull;
+		boolean error, validateWithNulls;
+
+		/**
+		 * Get the models manager
+		 */
+		let manager = <ManagerInterface> model->getModelsManager();
+
+		/**
+		 * We check if some of the belongsTo relations act as virtual foreign key
+		 */
+		let belongsTo = manager->getBelongsTo(model);
+
+		let error = false;
+		for relation in belongsTo {
+
+			let validateWithNulls = false;
+			let foreignKey = relation->getForeignKey();
+			if foreignKey === false {
+				continue;
+			}
+
+			/**
+			 * By default action is restrict
+			 */
+			let action = Relation::ACTION_RESTRICT;
+
+			/**
+			 * Try to find a different action in the foreign key's options
+			 */
+			if typeof foreignKey == "array" {
+				if isset foreignKey["action"] {
+					let action = (int) foreignKey["action"];
+				}
+			}
+
+			/**
+			 * Check only if the operation is restrict
+			 */
+			if action != Relation::ACTION_RESTRICT {
+				continue;
+			}
+
+			/**
+			 * Load the referenced model if needed
+			 */
+			let referencedModel = manager->load(relation->getReferencedModel());
+
+			/**
+			 * Since relations can have multiple columns or a single one, we need to build a condition for each of these cases
+			 */
+			let conditions = [], bindParams = [];
+
+			let numberNull = 0,
+				fields = relation->getFields(),
+				referencedFields = relation->getReferencedFields();
+
+			if typeof fields == "array" {
+				/**
+				 * Create a compound condition
+				 */
+				for position, field in fields {
+					fetch value, model->{field};
+					let conditions[] = "[" . referencedFields[position] . "] = ?" . position,
+						bindParams[] = value;
+					if typeof value == "null" {
+						let numberNull++;
+					}
+				}
+
+				let validateWithNulls = numberNull == count(fields);
+
+			} else {
+
+				fetch value, model->{fields};
+				let conditions[] = "[" . referencedFields . "] = ?0",
+					bindParams[] = value;
+
+				if typeof value == "null" {
+					let validateWithNulls = true;
+				}
+			}
+
+			/**
+			 * Check if the virtual foreign key has extra conditions
+			 */
+			if fetch extraConditions, foreignKey["conditions"] {
+				let conditions[] = extraConditions;
+			}
+
+			/**
+			 * Check if the relation definition allows nulls
+			 */
+			if validateWithNulls {
+				if fetch allowNulls, foreignKey["allowNulls"] {
+					let validateWithNulls = (boolean) allowNulls;
+				} else {
+					let validateWithNulls = false;
+				}
+			}
+
+			let referencedModelRepository = manager->getRepository(get_class(referencedModel));
+
+			/**
+			 * We don't trust the actual values in the object and pass the values using bound parameters
+			 * Let's make the checking
+			 */
+			if !validateWithNulls && !referencedModelRepository->count([join(" AND ", conditions), "bind": bindParams]) {
+
+				/**
+				 * Get the user message or produce a new one
+				 */
+				if !fetch message, foreignKey["message"] {
+					if typeof fields == "array" {
+						let message = "Value of fields \"" . join(", ", fields) . "\" does not exist on referenced table";
+					} else {
+						let message = "Value of field \"" . fields . "\" does not exist on referenced table";
+					}
+				}
+
+				/**
+				 * Create a message
+				 */
+				model->appendMessage(new Message(message, fields, "ConstraintViolation"));
+				let error = true;
+				break;
+			}
+		}
+
+		/**
+		 * Call 'onValidationFails' if the validation fails
+		 */
+		if error === true {
+			if globals_get("orm.events") {
+				model->fireEvent("onValidationFails");
+				model->_cancelOperation();
+			}
+			return false;
+		}
+
 		return true;
 	}
 }
