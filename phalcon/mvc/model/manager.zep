@@ -19,6 +19,7 @@
 
 namespace Phalcon\Mvc\Model;
 
+use Phalcon\Db;
 use Phalcon\Db\Column;
 use Phalcon\DiInterface;
 use Phalcon\Mvc\Model;
@@ -2133,6 +2134,83 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 		);
 
 		return success;
+	}
+
+	/**
+	 * Refreshes the model attributes re-querying the record from the database
+	 */
+	public function refresh(<ModelInterface> model) -> <ModelInterface>
+	{
+		var metaData, readConnection, schema, source, table,
+			uniqueKey, tables, uniqueParams, dialect, row, fields, attribute, manager, columnMap;
+
+		if model->getDirtyState() != Model::DIRTY_STATE_PERSISTENT {
+			throw new Exception("The record cannot be refreshed because it does not exist or is deleted");
+		}
+
+		let manager = model->getModelsManager(),
+			metaData = model->getModelsMetaData(),
+			readConnection = model->getReadConnection();
+
+		let schema = model->getSchema(),
+			source = model->getSource();
+
+		if schema {
+			let table = [schema, source];
+		} else {
+			let table = source;
+		}
+
+		let uniqueKey = model->_uniqueKey;
+		if !uniqueKey {
+
+			/**
+			 * We need to check if the record exists
+			 */
+			if !manager->exists(model) {
+				throw new Exception("The record cannot be refreshed because it does not exist or is deleted");
+			}
+
+			let uniqueKey = model->_uniqueKey;
+		}
+
+		let uniqueParams = model->_uniqueParams;
+		if typeof uniqueParams != "array" {
+			throw new Exception("The record cannot be refreshed because it does not exist or is deleted");
+		}
+
+		/**
+		 * We only refresh the attributes in the model's metadata
+		 */
+		let fields = [];
+		for attribute in metaData->getAttributes(model) {
+			let fields[] = [attribute];
+		}
+
+		/**
+		 * We directly build the SELECT to save resources
+		 */
+		let dialect = readConnection->getDialect(),
+			tables = dialect->select([
+				"columns": fields,
+				"tables":  readConnection->escapeIdentifier(table),
+				"where":   uniqueKey
+			]),
+			row = readConnection->fetchOne(tables, Db::FETCH_ASSOC, uniqueParams, model->_uniqueTypes);
+
+		/**
+		 * Get a column map if any
+		 * Assign the resulting array to the model object
+		 */
+		if typeof row == "array" {
+			let columnMap = metaData->getColumnMap(model);
+			model->assign(row, columnMap);
+			if this->isKeepingSnapshots(model) {
+				model->setSnapshotData(row, columnMap);
+			}
+		}
+
+		return model;
 	}
 
 	/**

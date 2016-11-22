@@ -184,11 +184,6 @@ interface ModelInterface
 	public function getOperationMade();
 
 	/**
-	 * Refreshes the model attributes re-querying the record from the database
-	 */
-	public function refresh();
-
-	/**
 	 * Skips the current operation forcing a success state
 	 */
 	public function skipOperation(boolean skip);

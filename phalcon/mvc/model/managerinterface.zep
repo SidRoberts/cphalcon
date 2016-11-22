@@ -413,4 +413,9 @@ interface ManagerInterface
 	 * </code>
 	 */
 	public function delete(<ModelInterface> model) -> boolean;
+
+	/**
+	 * Refreshes the model attributes re-querying the record from the database
+	 */
+	public function refresh(<ModelInterface> model) -> <ModelInterface>;
 }

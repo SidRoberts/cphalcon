@@ -699,7 +699,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 			'notField' => 'SOME VALUE'
 		));
 
-		$persona->refresh();
+		$modelsManager->refresh($persona);
 		$this->assertEquals($personaData, $persona->toArray());
 
 		// Issue 1314
@@ -1025,7 +1025,7 @@ class ModelsTest extends PHPUnit_Framework_TestCase
 			'status' => 'A'
 		));
 
-		$personer->refresh();
+		$modelsManager->refresh($personer);
 		$this->assertEquals($personerData, $personer->toArray());
 	}
 }
