@@ -15,6 +15,7 @@ use Closure;
 use Phalcon\Di\DiInterface;
 use Phalcon\Di\Injectable;
 use Phalcon\Di\FactoryDefault;
+use Phalcon\Mvc\Router\Group;
 use Phalcon\Mvc\Micro\Exception;
 use Phalcon\Di\ServiceInterface;
 use Phalcon\Mvc\Micro\Collection;
@@ -134,17 +135,21 @@ class Micro extends Injectable implements ArrayAccess, EventsAwareInterface
      */
     public function delete(string! routePattern, handler) -> <RouteInterface>
     {
-        var router, route;
+        var router, route, group;
 
         /**
          * We create a router even if there is no one in the DI
          */
         let router = this->getRouter();
 
+        let group = new Group();
+
         /**
          * Routes are added to the router restricting to DELETE
          */
-        let route = router->addDelete(routePattern);
+        let route = group->addDelete(routePattern);
+
+        router->mount(group);
 
         /**
          * Using the id produced by the router we store the handler
@@ -189,17 +194,21 @@ class Micro extends Injectable implements ArrayAccess, EventsAwareInterface
      */
     public function get(string! routePattern, handler) -> <RouteInterface>
     {
-        var router, route;
+        var router, route, group;
 
         /**
          * We create a router even if there is no one in the DI
          */
         let router = this->getRouter();
 
+        let group = new Group();
+
         /**
          * Routes are added to the router restricting to GET
          */
-        let route = router->addGet(routePattern);
+        let route = group->addGet(routePattern);
+
+        router->mount(group);
 
         /**
          * Using the id produced by the router we store the handler
@@ -800,17 +809,21 @@ class Micro extends Injectable implements ArrayAccess, EventsAwareInterface
      */
     public function head(string! routePattern, handler) -> <RouteInterface>
     {
-        var router, route;
+        var router, route, group;
 
         /**
          * We create a router even if there is no one in the DI
          */
         let router = this->getRouter();
 
+        let group = new Group();
+
         /**
          * Routes are added to the router restricting to HEAD
          */
-        let route = router->addHead(routePattern);
+        let route = group->addHead(routePattern);
+
+        router->mount(group);
 
         /**
          * Using the id produced by the router we store the handler
@@ -830,17 +843,21 @@ class Micro extends Injectable implements ArrayAccess, EventsAwareInterface
      */
     public function map(string! routePattern, handler) -> <RouteInterface>
     {
-        var router, route;
+        var router, route, group;
 
         /**
          * We create a router even if there is no one in the DI
          */
         let router = this->getRouter();
 
+        let group = new Group();
+
         /**
          * Routes are added to the router
          */
-        let route = router->add(routePattern);
+        let route = group->add(routePattern);
+
+        router->mount(group);
 
         /**
          * Using the id produced by the router we store the handler
@@ -1010,17 +1027,21 @@ class Micro extends Injectable implements ArrayAccess, EventsAwareInterface
      */
     public function options(string! routePattern, handler) -> <RouteInterface>
     {
-        var router, route;
+        var router, route, group;
 
         /**
          * We create a router even if there is no one in the DI
          */
         let router = this->getRouter();
 
+        let group = new Group();
+
         /**
          * Routes are added to the router restricting to OPTIONS
          */
-        let route = router->addOptions(routePattern);
+        let route = group->addOptions(routePattern);
+
+        router->mount(group);
 
         /**
          * Using the id produced by the router we store the handler
@@ -1040,17 +1061,21 @@ class Micro extends Injectable implements ArrayAccess, EventsAwareInterface
      */
     public function patch(string! routePattern, handler) -> <RouteInterface>
     {
-        var router, route;
+        var router, route, group;
 
         /**
          * We create a router even if there is no one in the DI
          */
         let router = this->getRouter();
 
+        let group = new Group();
+
         /**
          * Routes are added to the router restricting to PATCH
          */
-        let route = router->addPatch(routePattern);
+        let route = group->addPatch(routePattern);
+
+        router->mount(group);
 
         /**
          * Using the id produced by the router we store the handler
@@ -1070,17 +1095,21 @@ class Micro extends Injectable implements ArrayAccess, EventsAwareInterface
      */
     public function post(string! routePattern, handler) -> <RouteInterface>
     {
-        var router, route;
+        var router, route, group;
 
         /**
          * We create a router even if there is no one in the DI
          */
         let router = this->getRouter();
 
+        let group = new Group();
+
         /**
          * Routes are added to the router restricting to POST
          */
-        let route = router->addPost(routePattern);
+        let route = group->addPost(routePattern);
+
+        router->mount(group);
 
         /**
          * Using the id produced by the router we store the handler
@@ -1100,17 +1129,21 @@ class Micro extends Injectable implements ArrayAccess, EventsAwareInterface
      */
     public function put(string! routePattern, handler) -> <RouteInterface>
     {
-        var router, route;
+        var router, route, group;
 
         /**
          * We create a router even if there is no one in the DI
          */
         let router = this->getRouter();
 
+        let group = new Group();
+
         /**
          * Routes are added to the router restricting to PUT
          */
-        let route = router->addPut(routePattern);
+        let route = group->addPut(routePattern);
+
+        router->mount(group);
 
         /**
          * Using the id produced by the router we store the handler

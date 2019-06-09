@@ -138,7 +138,9 @@ class GroupCest
 
         $router->setDI($container);
 
-        $router->add(
+        $group1 = new Group();
+
+        $group1->add(
             '/edit',
             [
                 'controller' => 'posts3',
@@ -146,11 +148,13 @@ class GroupCest
             ]
         );
 
-        $group = new Group();
+        $router->mount($group1);
 
-        $group->setHostname('my.phalcon.io');
+        $group2 = new Group();
 
-        $group->add(
+        $group2->setHostname('my.phalconphp.com');
+
+        $group2->add(
             '/edit',
             [
                 'controller' => 'posts',
@@ -158,7 +162,7 @@ class GroupCest
             ]
         );
 
-        $router->mount($group);
+        $router->mount($group2);
 
         $_SERVER['HTTP_HOST'] = $actualHost;
 
@@ -216,7 +220,9 @@ class GroupCest
 
         $router->setDI($container);
 
-        $router->add(
+        $group1 = new Group();
+
+        $group1->add(
             '/edit',
             [
                 'controller' => 'posts3',
@@ -224,11 +230,13 @@ class GroupCest
             ]
         );
 
-        $group = new Group();
+        $router->mount($group1);
 
-        $group->setHostname('([a-z]+).phalcon.io');
+        $group2 = new Group();
 
-        $group->add(
+        $group2->setHostname('([a-z]+).phalcon.io');
+
+        $group2->add(
             '/edit',
             [
                 'controller' => 'posts',
@@ -236,7 +244,7 @@ class GroupCest
             ]
         );
 
-        $router->mount($group);
+        $router->mount($group2);
 
         $_SERVER['HTTP_HOST'] = $actualHost;
 

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Phalcon\Test\Integration\Mvc\Router;
 
 use IntegrationTester;
+use Phalcon\Mvc\Router\Group;
 use Phalcon\Test\Fixtures\Traits\RouterTrait;
 
 class GetRoutesCest
@@ -32,7 +33,9 @@ class GetRoutesCest
 
         $router = $this->getRouter(false);
 
-        $getRoute = $router->addGet(
+        $group = new Group();
+
+        $getRoute = $group->addGet(
             '/docs/index',
             [
                 'controller' => 'documentation4',
@@ -40,13 +43,15 @@ class GetRoutesCest
             ]
         );
 
-        $postRoute = $router->addPost(
+        $postRoute = $group->addPost(
             '/docs/index',
             [
                 'controller' => 'documentation3',
                 'action'     => 'index',
             ]
         );
+
+        $router->mount($group);
 
         $I->assertCount(
             2,

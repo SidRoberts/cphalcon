@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Phalcon\Test\Integration\Mvc\Router;
 
 use IntegrationTester;
+use Phalcon\Mvc\Router\Group;
 use Phalcon\Test\Fixtures\Traits\RouterTrait;
 
 class GetRouteByNameCest
@@ -32,9 +33,13 @@ class GetRouteByNameCest
 
         $router = $this->getRouter(false);
 
-        $router->add('/test', ['controller' => 'test', 'action' => 'test'])->setName('test');
-        $router->add('/test2', ['controller' => 'test', 'action' => 'test'])->setName('test2');
-        $router->add('/test3', ['controller' => 'test', 'action' => 'test'])->setName('test3');
+        $group = new Group();
+
+        $group->add('/test', ['controller' => 'test', 'action' => 'test'])->setName('test');
+        $group->add('/test2', ['controller' => 'test', 'action' => 'test'])->setName('test2');
+        $group->add('/test3', ['controller' => 'test', 'action' => 'test'])->setName('test3');
+
+        $router->mount($group);
 
         /**
          * We reverse routes so we first check last added route
@@ -57,8 +62,12 @@ class GetRouteByNameCest
     {
         $router = $this->getRouter(false);
 
-        $usersFind = $router->add('/api/users/find')->setHttpMethods('GET')->setName('usersFind');
-        $usersAdd  = $router->add('/api/users/add')->setHttpMethods('POST')->setName('usersAdd');
+        $group = new Group();
+
+        $usersFind = $group->add('/api/users/find')->setHttpMethods('GET')->setName('usersFind');
+        $usersAdd  = $group->add('/api/users/add')->setHttpMethods('POST')->setName('usersAdd');
+
+        $router->mount($group);
 
         $I->assertEquals(
             $usersAdd,

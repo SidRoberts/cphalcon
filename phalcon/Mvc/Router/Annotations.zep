@@ -403,4 +403,21 @@ class Annotations extends Router
     {
         let this->controllerSuffix = controllerSuffix;
     }
+
+    /**
+     * Adds a route to the router without any HTTP constraint
+     */
+    protected function add(string! pattern, var paths = null) -> <RouteInterface>
+    {
+        var route;
+
+        /**
+         * Every route is internally stored as a Phalcon\Mvc\Router\Route
+         */
+        let route = new Route(pattern, paths);
+
+        this->attach(route);
+
+        return route;
+    }
 }

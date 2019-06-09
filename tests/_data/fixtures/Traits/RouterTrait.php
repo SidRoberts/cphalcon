@@ -15,6 +15,7 @@ namespace Phalcon\Test\Fixtures\Traits;
 use Phalcon\Di;
 use Phalcon\Http\Request;
 use Phalcon\Mvc\Router;
+use Phalcon\Mvc\Router\Group;
 use Phalcon\Mvc\Router\Route;
 
 trait RouterTrait
@@ -61,16 +62,22 @@ trait RouterTrait
     {
         $methodName = $data['methodName'];
 
+        $group = new Group();
+
         if (isset($data[1])) {
-            return $router->$methodName(
+            $route = $group->$methodName(
                 $data[0],
                 $data[1]
             );
+        } else {
+            $route = $group->$methodName(
+                $data[0]
+            );
         }
 
-        return $router->$methodName(
-            $data[0]
-        );
+        $router->mount($group);
+
+        return $route;
     }
 
     /**
@@ -101,7 +108,9 @@ trait RouterTrait
     {
         $router = $this->getRouter();
 
-        $router->add(
+        $group = new Group();
+
+        $group->add(
             '/{controller:[a-z\-]+}/{action:[a-z\-]+}/this-is-a-country'
         )->convert(
             'controller',
@@ -115,7 +124,7 @@ trait RouterTrait
             }
         );
 
-        $router->add(
+        $group->add(
             '/([A-Z]+)/([0-9]+)',
             [
                 'controller' => 1,
@@ -138,6 +147,8 @@ trait RouterTrait
                 return strrev($id);
             }
         );
+
+        $router->mount($group);
 
         return $router;
     }

@@ -62,7 +62,7 @@ interface GroupInterface
      * Adds a route to the router on any HTTP method
      *
      *```php
-     * router->add("/about", "About::index");
+     * $group->add("/about", "About::index");
      *```
      */
     public function add(string! pattern, var paths = null, var httpMethods = null) -> <RouteInterface>;

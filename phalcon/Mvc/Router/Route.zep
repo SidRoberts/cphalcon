@@ -58,7 +58,7 @@ class Route implements RouteInterface
      * If the callback returns false the route is treated as not matched
      *
      *```php
-     * $router->add(
+     * $group->add(
      *     "/login",
      *     [
      *         "module"     => "admin",
@@ -470,7 +470,7 @@ class Route implements RouteInterface
      * Allows to set a callback to handle the request directly in the route
      *
      *```php
-     * $router->add(
+     * $group->add(
      *     "/help",
      *     []
      * )->match(
@@ -590,7 +590,7 @@ class Route implements RouteInterface
      * Sets the route's name
      *
      *```php
-     * $router->add(
+     * $group->add(
      *     "/about",
      *     [
      *         "controller" => "about",

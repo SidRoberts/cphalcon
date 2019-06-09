@@ -19,6 +19,7 @@ use Phalcon\Di\DiInterface;
 use Phalcon\Di\FactoryDefault;
 use Phalcon\Mvc\Application;
 use Phalcon\Mvc\Router;
+use Phalcon\Mvc\Router\Group;
 use Phalcon\Mvc\View;
 use Phalcon\Test\Modules\Backend\Module;
 
@@ -39,7 +40,9 @@ class RegisterModulesCest
             function () {
                 $router = new Router(false);
 
-                $router->add(
+                $group = new Group();
+
+                $group->add(
                     '/index',
                     [
                         'controller' => 'index',
@@ -47,6 +50,8 @@ class RegisterModulesCest
                         'namespace'  => 'Phalcon\Test\Modules\Frontend\Controllers',
                     ]
                 );
+
+                $router->mount($group);
 
                 return $router;
             }
@@ -92,7 +97,9 @@ class RegisterModulesCest
             function () {
                 $router = new Router(false);
 
-                $router->add(
+                $group = new Group();
+
+                $group->add(
                     '/index',
                     [
                         'controller' => 'index',
@@ -101,7 +108,7 @@ class RegisterModulesCest
                     ]
                 );
 
-                $router->add(
+                $group->add(
                     '/login',
                     [
                         'controller' => 'login',
@@ -109,6 +116,8 @@ class RegisterModulesCest
                         'namespace'  => 'Phalcon\Test\Modules\Backend\Controllers',
                     ]
                 );
+
+                $router->mount($group);
 
                 return $router;
             }
@@ -176,7 +185,9 @@ class RegisterModulesCest
             function () {
                 $router = new Router(false);
 
-                $router->add(
+                $group = new Group();
+
+                $group->add(
                     '/index',
                     [
                         'controller' => 'index',
@@ -184,6 +195,8 @@ class RegisterModulesCest
                         'namespace'  => 'Phalcon\Test\Modules\Frontend\Controllers',
                     ]
                 );
+
+                $router->mount($group);
 
                 return $router;
             }

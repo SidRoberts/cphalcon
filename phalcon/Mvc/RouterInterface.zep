@@ -19,65 +19,9 @@ use Phalcon\Mvc\Router\GroupInterface;
 interface RouterInterface
 {
     /**
-     * Adds a route to the router on any HTTP method
-     */
-    public function add(string! pattern, var paths = null, var httpMethods = null) -> <RouteInterface>;
-
-    /**
      * Attach Route object to the routes stack.
      */
     public function attach(<RouteInterface> route, var position = Router::POSITION_LAST) -> <RouterInterface>;
-
-    /**
-     * Adds a route to the router that only match if the HTTP method is CONNECT
-     */
-    public function addConnect(string! pattern, var paths = null) -> <RouteInterface>;
-
-    /**
-     * Adds a route to the router that only match if the HTTP method is DELETE
-     */
-    public function addDelete(string! pattern, var paths = null) -> <RouteInterface>;
-
-    /**
-     * Adds a route to the router that only match if the HTTP method is HEAD
-     */
-    public function addHead(string! pattern, var paths = null) -> <RouteInterface>;
-
-    /**
-     * Adds a route to the router that only match if the HTTP method is GET
-     */
-    public function addGet(string! pattern, var paths = null) -> <RouteInterface>;
-
-    /**
-     * Add a route to the router that only match if the HTTP method is OPTIONS
-     */
-    public function addOptions(string! pattern, var paths = null) -> <RouteInterface>;
-
-    /**
-     * Adds a route to the router that only match if the HTTP method is PATCH
-     */
-    public function addPatch(string! pattern, paths = null) -> <RouteInterface>;
-
-    /**
-     * Adds a route to the router that only match if the HTTP method is POST
-     */
-    public function addPost(string! pattern, var paths = null) -> <RouteInterface>;
-
-    /**
-     * Adds a route to the router that only match if the HTTP method is PURGE
-     * (Squid and Varnish support)
-     */
-    public function addPurge(string! pattern, var paths = null) -> <RouteInterface>;
-
-    /**
-     * Adds a route to the router that only match if the HTTP method is PUT
-     */
-    public function addPut(string! pattern, var paths = null) -> <RouteInterface>;
-
-    /**
-     * Adds a route to the router that only match if the HTTP method is TRACE
-     */
-    public function addTrace(string! pattern, var paths = null) -> <RouteInterface>;
 
     /**
      * Removes all the defined routes

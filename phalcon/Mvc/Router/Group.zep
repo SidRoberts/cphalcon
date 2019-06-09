@@ -84,7 +84,7 @@ class Group implements GroupInterface
      * Adds a route to the router on any HTTP method
      *
      *```php
-     * $router->add("/about", "About::index");
+     * $group->add("/about", "About::index");
      *```
      *
      * @param string|array paths = [

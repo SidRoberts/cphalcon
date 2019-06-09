@@ -13,6 +13,7 @@ namespace Phalcon\Test\Integration\Mvc;
 
 use Codeception\Example;
 use IntegrationTester;
+use Phalcon\Mvc\Router\Group;
 use Phalcon\Mvc\Router\Route;
 use Phalcon\Test\Fixtures\Traits\RouterTrait;
 
@@ -71,7 +72,9 @@ class RouterCest
         $router = $this->getRouter(false);
         $trace  = 0;
 
-        $router
+        $group = new Group();
+
+        $group
             ->add('/static/route')
             ->beforeMatch(
                 function () use (&$trace) {
@@ -82,7 +85,7 @@ class RouterCest
             )
         ;
 
-        $router
+        $group
             ->add('/static/route2')
             ->beforeMatch(
                 function () use (&$trace) {
@@ -92,6 +95,8 @@ class RouterCest
                 }
             )
         ;
+
+        $router->mount($group);
 
 
         $router->handle('/');
@@ -585,9 +590,9 @@ class RouterCest
         $path     = $example[1];
         $expected = $example[2];
 
-        $router = $this->getRouter(false);
+        $group = new Group();
 
-        $route = $router->add($route, $path);
+        $route = $group->add($route, $path);
 
         $I->assertEquals(
             $expected,

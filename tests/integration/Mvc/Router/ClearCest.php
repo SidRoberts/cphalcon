@@ -15,6 +15,7 @@ namespace Phalcon\Test\Integration\Mvc\Router;
 
 use IntegrationTester;
 use Phalcon\Mvc\Router;
+use Phalcon\Mvc\Router\Group;
 
 class ClearCest
 {
@@ -30,13 +31,17 @@ class ClearCest
 
         $router = new Router(false);
 
-        $router->addGet(
+        $group = new Group();
+
+        $group->addGet(
             '/docs/index',
             [
                 'controller' => 'documentation4',
                 'action'     => 'index',
             ]
         );
+
+        $router->mount($group);
 
         $I->assertCount(
             1,

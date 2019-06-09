@@ -16,6 +16,7 @@ use Phalcon\Events\EventsAwareInterface;
 use Phalcon\Events\ManagerInterface;
 use Phalcon\Http\RequestInterface;
 use Phalcon\Mvc\Router\Exception;
+use Phalcon\Mvc\Router\Group;
 use Phalcon\Mvc\Router\GroupInterface;
 use Phalcon\Mvc\Router\Route;
 use Phalcon\Mvc\Router\RouteInterface;
@@ -33,13 +34,17 @@ use Phalcon\Mvc\Router\RouteInterface;
  *
  * $router = new Router();
  *
- * $router->add(
+ * $group = new Group();
+ *
+ * $group->add(
  *     "/documentation/{chapter}/{name}\.{type:[a-z]+}",
  *     [
  *         "controller" => "documentation",
  *         "action"     => "show",
  *     ]
  * );
+ *
+ * $router->mount($group);
  *
  * $router->handle(
  *     "/documentation/1/examples.html"
@@ -70,7 +75,7 @@ class Router extends AbstractInjectionAware implements RouterInterface, EventsAw
     protected notFoundPaths;
     protected params = [];
     protected removeExtraSlashes;
-    protected routes;
+    protected routes = [];
     protected uriSource;
     protected wasMatched = false;
 
@@ -79,7 +84,7 @@ class Router extends AbstractInjectionAware implements RouterInterface, EventsAw
      */
     public function __construct(bool! defaultRoutes = true)
     {
-        array routes = [];
+        var group;
 
         if defaultRoutes {
             /**
@@ -87,14 +92,16 @@ class Router extends AbstractInjectionAware implements RouterInterface, EventsAw
              * /:controller/:action/:params
              */
 
-            let routes[] = new Route(
+            let group = new Group();
+
+            group->add(
                 "#^/([\\w0-9\\_\\-]+)[/]{0,1}$#u",
                 [
                     "controller": 1
                 ]
             );
 
-            let routes[] = new Route(
+            group->add(
                 "#^/([\\w0-9\\_\\-]+)/([\\w0-9\\.\\_]+)(/.*)*$#u",
                 [
                     "controller": 1,
@@ -102,203 +109,9 @@ class Router extends AbstractInjectionAware implements RouterInterface, EventsAw
                     "params":     3
                 ]
             );
+
+            this->mount(group);
         }
-
-        let this->routes = routes;
-    }
-
-    /**
-     * Adds a route to the router without any HTTP constraint
-     *
-     *```php
-     * use Phalcon\Mvc\Router;
-     *
-     * $router->add("/about", "About::index");
-     *
-     * $router->add(
-     *     "/about",
-     *     "About::index",
-     *     ["GET", "POST"]
-     * );
-     *
-     * $router->add(
-     *     "/about",
-     *     "About::index",
-     *     ["GET", "POST"],
-     *     Router::POSITION_FIRST
-     * );
-     *```
-     *
-     * @param string|array paths = [
-     *     'module => '',
-     *     'controller' => '',
-     *     'action' => '',
-     *     'namespace' => ''
-     * ]
-     */
-    public function add(string! pattern, var paths = null, var httpMethods = null, var position = Router::POSITION_LAST) -> <RouteInterface>
-    {
-        var route;
-
-        /**
-         * Every route is internally stored as a Phalcon\Mvc\Router\Route
-         */
-        let route = new Route(pattern, paths, httpMethods);
-
-        this->attach(route, position);
-
-        return route;
-    }
-
-    /**
-     * Adds a route to the router that only match if the HTTP method is CONNECT
-     *
-     * @param string|array paths = [
-     *     'module => '',
-     *     'controller' => '',
-     *     'action' => '',
-     *     'namespace' => ''
-     * ]
-     */
-    public function addConnect(string! pattern, var paths = null, var position = Router::POSITION_LAST) -> <RouteInterface>
-    {
-        return this->add(pattern, paths, "CONNECT", position);
-    }
-
-    /**
-     * Adds a route to the router that only match if the HTTP method is DELETE
-     *
-     * @param string|array paths = [
-     *     'module => '',
-     *     'controller' => '',
-     *     'action' => '',
-     *     'namespace' => ''
-     * ]
-     */
-    public function addDelete(string! pattern, var paths = null, var position = Router::POSITION_LAST) -> <RouteInterface>
-    {
-        return this->add(pattern, paths, "DELETE", position);
-    }
-
-    /**
-     * Adds a route to the router that only match if the HTTP method is GET
-     *
-     * @param string|array paths = [
-     *     'module => '',
-     *     'controller' => '',
-     *     'action' => '',
-     *     'namespace' => ''
-     * ]
-     */
-    public function addGet(string! pattern, var paths = null, var position = Router::POSITION_LAST) -> <RouteInterface>
-    {
-        return this->add(pattern, paths, "GET", position);
-    }
-
-    /**
-     * Adds a route to the router that only match if the HTTP method is HEAD
-     *
-     * @param string|array paths = [
-     *     'module => '',
-     *     'controller' => '',
-     *     'action' => '',
-     *     'namespace' => ''
-     * ]
-     */
-    public function addHead(string! pattern, var paths = null, var position = Router::POSITION_LAST) -> <RouteInterface>
-    {
-        return this->add(pattern, paths, "HEAD", position);
-    }
-
-    /**
-     * Add a route to the router that only match if the HTTP method is OPTIONS
-     *
-     * @param string|array paths = [
-     *     'module => '',
-     *     'controller' => '',
-     *     'action' => '',
-     *     'namespace' => ''
-     * ]
-     */
-    public function addOptions(string! pattern, var paths = null, var position = Router::POSITION_LAST) -> <RouteInterface>
-    {
-        return this->add(pattern, paths, "OPTIONS", position);
-    }
-
-    /**
-     * Adds a route to the router that only match if the HTTP method is PATCH
-     *
-     * @param string|array paths = [
-     *     'module => '',
-     *     'controller' => '',
-     *     'action' => '',
-     *     'namespace' => ''
-     * ]
-     */
-    public function addPatch(string! pattern, var paths = null, var position = Router::POSITION_LAST) -> <RouteInterface>
-    {
-        return this->add(pattern, paths, "PATCH", position);
-    }
-
-    /**
-     * Adds a route to the router that only match if the HTTP method is POST
-     *
-     * @param string|array paths = [
-     *     'module => '',
-     *     'controller' => '',
-     *     'action' => '',
-     *     'namespace' => ''
-     * ]
-     */
-    public function addPost(string! pattern, var paths = null, var position = Router::POSITION_LAST) -> <RouteInterface>
-    {
-        return this->add(pattern, paths, "POST", position);
-    }
-
-    /**
-     * Adds a route to the router that only match if the HTTP method is PURGE
-     * (Squid and Varnish support)
-     *
-     * @param string|array paths = [
-     *     'module => '',
-     *     'controller' => '',
-     *     'action' => '',
-     *     'namespace' => ''
-     * ]
-     */
-    public function addPurge(string! pattern, var paths = null, var position = Router::POSITION_LAST) -> <RouteInterface>
-    {
-        return this->add(pattern, paths, "PURGE", position);
-    }
-
-    /**
-     * Adds a route to the router that only match if the HTTP method is PUT
-     *
-     * @param string|array paths = [
-     *     'module => '',
-     *     'controller' => '',
-     *     'action' => '',
-     *     'namespace' => ''
-     * ]
-     */
-    public function addPut(string! pattern, var paths = null, var position = Router::POSITION_LAST) -> <RouteInterface>
-    {
-        return this->add(pattern, paths, "PUT", position);
-    }
-
-    /**
-     * Adds a route to the router that only match if the HTTP method is TRACE
-     *
-     * @param string|array paths = [
-     *     'module => '',
-     *     'controller' => '',
-     *     'action' => '',
-     *     'namespace' => ''
-     * ]
-     */
-    public function addTrace(string! pattern, var paths = null, var position = Router::POSITION_LAST) -> <RouteInterface>
-    {
-        return this->add(pattern, paths, "TRACE", position);
     }
 
     /**
