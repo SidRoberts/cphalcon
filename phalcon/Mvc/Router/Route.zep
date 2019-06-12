@@ -20,7 +20,6 @@ class Route implements RouteInterface
     protected beforeMatch;
     protected compiledPattern;
     protected converters;
-    protected group;
     protected hostname;
     protected id { get };
     protected methods;
@@ -310,14 +309,6 @@ class Route implements RouteInterface
     }
 
     /**
-     * Returns the group associated with the route
-     */
-    public function getGroup() -> <GroupInterface> | null
-    {
-        return this->group;
-    }
-
-    /**
      * Returns the HTTP methods that constraint matching the route
      */
     public function getHttpMethods() -> array | string
@@ -541,16 +532,6 @@ class Route implements RouteInterface
     public static function reset() -> void
     {
         let self::uniqueId = 0;
-    }
-
-    /**
-     * Sets the group associated with the route
-     */
-    public function setGroup(<GroupInterface> group) -> <RouteInterface>
-    {
-        let this->group = group;
-
-        return this;
     }
 
     /**

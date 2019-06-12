@@ -383,8 +383,6 @@ class Group implements GroupInterface
         let route = new Route(this->prefix . pattern, mergedPaths, httpMethods),
             this->routes[] = route;
 
-        route->setGroup(this);
-
         return route;
     }
 }

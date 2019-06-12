@@ -87,11 +87,6 @@ class GroupCest
             $example['action'],
             $router->getActionName()
         );
-
-        $I->assertEquals(
-            $blog,
-            $router->getMatchedRoute()->getGroup()
-        );
     }
 
     private function groupsProvider(): array
