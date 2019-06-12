@@ -23,52 +23,14 @@ class Repository implements RepositoryInterface, JsonSerializable
     /**
      * @var array
      */
-    protected aliases = [];
-
-    /**
-     * @var array
-     */
     protected properties = [];
-
-    /**
-     * {@inheritdoc}
-     */
-    public function __get(string property) -> var | null
-    {
-        var method;
-
-        let method = "get" . camelize(
-            this->getRealNameProperty(property)
-        );
-
-        if method_exists(this, method) {
-            return this->{method}();
-        }
-
-        /**
-         * A notice is shown if the property is not defined
-         */
-        trigger_error(
-            "Access to undefined property " . get_class(this) . "::" . property
-        );
-
-        return null;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getAliases() -> array
-    {
-        return this->aliases;
-    }
 
     /**
      * {@inheritdoc}
      */
     public function getCurrent() -> int
     {
-        return this->getProperty(self::PROPERTY_CURRENT_PAGE, 0);
+        return this->getProperty("current", 0);
     }
 
     /**
@@ -76,7 +38,7 @@ class Repository implements RepositoryInterface, JsonSerializable
      */
     public function getFirst() -> int
     {
-        return this->getProperty(self::PROPERTY_FIRST_PAGE, 0);
+        return this->getProperty("first", 0);
     }
 
     /**
@@ -84,7 +46,7 @@ class Repository implements RepositoryInterface, JsonSerializable
      */
     public function getItems() -> var
     {
-        return this->getProperty(self::PROPERTY_ITEMS, null);
+        return this->getProperty("items", null);
     }
 
     /**
@@ -92,7 +54,7 @@ class Repository implements RepositoryInterface, JsonSerializable
      */
     public function getLast() -> int
     {
-        return this->getProperty(self::PROPERTY_LAST_PAGE, 0);
+        return this->getProperty("last", 0);
     }
 
     /**
@@ -100,7 +62,7 @@ class Repository implements RepositoryInterface, JsonSerializable
      */
     public function getLimit() -> int
     {
-        return this->getProperty(self::PROPERTY_LIMIT, 0);
+        return this->getProperty("limit", 0);
     }
 
     /**
@@ -108,7 +70,7 @@ class Repository implements RepositoryInterface, JsonSerializable
      */
     public function getNext() -> int
     {
-        return this->getProperty(self::PROPERTY_NEXT_PAGE, 0);
+        return this->getProperty("next", 0);
     }
 
     /**
@@ -116,7 +78,7 @@ class Repository implements RepositoryInterface, JsonSerializable
      */
     public function getPrevious() -> int
     {
-        return this->getProperty(self::PROPERTY_PREVIOUS_PAGE, 0);
+        return this->getProperty("previous", 0);
     }
 
     /**
@@ -124,7 +86,7 @@ class Repository implements RepositoryInterface, JsonSerializable
      */
     public function getTotalItems() -> int
     {
-        return this->getProperty(self::PROPERTY_TOTAL_ITEMS, 0);
+        return this->getProperty("total_items", 0);
     }
 
     /**
@@ -133,16 +95,6 @@ class Repository implements RepositoryInterface, JsonSerializable
     public function jsonSerialize() -> array
     {
         return this->properties;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function setAliases(array aliases) -> <RepositoryInterface>
-    {
-        let this->aliases = aliases;
-
-        return this;
     }
 
     /**
@@ -165,21 +117,5 @@ class Repository implements RepositoryInterface, JsonSerializable
             property,
             defaultValue
         );
-    }
-
-    /**
-     * Resolve alias property name
-     */
-    protected function getRealNameProperty(string property) -> string
-    {
-        var aliases;
-
-        let aliases = this->getAliases();
-
-        if isset aliases[property] {
-            return aliases[property];
-        }
-
-        return property;
     }
 }

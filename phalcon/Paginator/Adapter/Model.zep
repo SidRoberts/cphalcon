@@ -140,14 +140,14 @@ class Model extends AbstractAdapter
 
         return this->getRepository(
             [
-                RepositoryInterface::PROPERTY_ITEMS         : pageItems,
-                RepositoryInterface::PROPERTY_TOTAL_ITEMS   : rowcount,
-                RepositoryInterface::PROPERTY_LIMIT         : this->limitRows,
-                RepositoryInterface::PROPERTY_FIRST_PAGE    : 1,
-                RepositoryInterface::PROPERTY_PREVIOUS_PAGE : previous,
-                RepositoryInterface::PROPERTY_CURRENT_PAGE  : pageNumber,
-                RepositoryInterface::PROPERTY_NEXT_PAGE     : next,
-                RepositoryInterface::PROPERTY_LAST_PAGE     : totalPages
+                "items":       pageItems,
+                "total_items": rowcount,
+                "limit":       this->limitRows,
+                "first":       1,
+                "previous":    previous,
+                "current":     pageNumber,
+                "next":        next,
+                "last":        totalPages
             ]
         );
     }

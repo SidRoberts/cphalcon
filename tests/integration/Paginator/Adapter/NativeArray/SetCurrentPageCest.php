@@ -49,12 +49,12 @@ class SetCurrentPageCest
             $page
         );
 
-        $I->assertCount(10, $page->items);
-        $I->assertEquals(1, $page->previous);
-        $I->assertEquals(3, $page->next);
-        $I->assertEquals(3, $page->last);
-        $I->assertEquals(10, $page->limit);
-        $I->assertEquals(2, $page->current);
-        $I->assertEquals(30, $page->total_items);
+        $I->assertCount(10, $page->getItems());
+        $I->assertEquals(1, $page->getPrevious());
+        $I->assertEquals(3, $page->getNext());
+        $I->assertEquals(3, $page->getLast());
+        $I->assertEquals(10, $page->getLimit());
+        $I->assertEquals(2, $page->getCurrent());
+        $I->assertEquals(30, $page->getTotalItems());
     }
 }
