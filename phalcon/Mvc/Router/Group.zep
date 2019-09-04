@@ -314,7 +314,13 @@ class Group implements GroupInterface
      */
     public function setHostname(string hostname) -> <GroupInterface>
     {
+        var route;
+
         let this->hostname = hostname;
+
+        for route in this->routes {
+            route->setHostname(hostname);
+        }
 
         return this;
     }
@@ -380,8 +386,13 @@ class Group implements GroupInterface
         /**
          * Every route is internally stored as a Phalcon\Mvc\Router\Route
          */
-        let route = new Route(this->prefix . pattern, mergedPaths, httpMethods),
-            this->routes[] = route;
+        let route = new Route(this->prefix . pattern, mergedPaths, httpMethods);
+
+        if this->hostname {
+            route->setHostname(this->hostname);
+        }
+
+        let this->routes[] = route;
 
         return route;
     }
