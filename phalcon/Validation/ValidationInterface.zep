@@ -44,9 +44,14 @@ interface ValidationInterface
     public function getEntity() -> object;
 
     /**
-     * Returns all the filters or a specific one
+     * Returns all the filters
      */
-    public function getFilters(string field = null) -> var | null;
+    public function getFilters() -> var;
+
+    /**
+     * Returns the filters for a specific field
+     */
+    public function getFiltersFor(string field) -> var | null;
 
     /**
      * Get label for field

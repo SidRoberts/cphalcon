@@ -137,17 +137,21 @@ class Validation extends Injectable implements ValidationInterface
     }
 
     /**
-     * Returns all the filters or a specific one
+     * Returns all the filters
      */
-    public function getFilters(string field = null) -> var | null
+    public function getFilters() -> var
+    {
+        return this->filters;
+    }
+
+    /**
+     * Returns the filters for a specific field
+     */
+    public function getFiltersFor(string field) -> var | null
     {
         var filters, fieldFilters;
 
         let filters = this->filters;
-
-        if !field {
-            return filters;
-        }
 
         if !fetch fieldFilters, filters[field] {
             return null;
