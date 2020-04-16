@@ -176,12 +176,36 @@ class View extends Injectable implements ViewInterface, EventsAwareInterface
      * );
      *```
      */
-    public function disableLevel(var level) -> <ViewInterface>
+    public function disableLevel(int level) -> <ViewInterface>
     {
-        if typeof level == "array" {
-            let this->disabledLevels = level;
-        } else {
-            let this->disabledLevels[level] = true;
+        let this->disabledLevels[level] = true;
+
+        return this;
+    }
+
+    /**
+     * Disables levels of rendering
+     *
+     *<code>
+     * // Render all levels except ACTION level
+     * $this->view->disableLevels(
+     *     [
+     *         View::LEVEL_ACTION_VIEW,
+     *     ]
+     * );
+     *</code>
+     */
+    public function disableLevels(array levels) -> <ViewInterface>
+    {
+        var level;
+
+        /**
+         * Reset disabled levels
+         */
+        let this->disabledLevels = [];
+
+        for level in levels {
+            this->disableLevel(level);
         }
 
         return this;
