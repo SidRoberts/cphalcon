@@ -78,18 +78,18 @@ class Config extends Collection
      */
     public function merge(var toMerge) -> <Config>
     {
-        var config, result, source, target;
+        var result, source, target;
 
         if typeof toMerge === "array" {
-            let config = new Config(toMerge);
-        } elseif typeof toMerge === "object" && toMerge instanceof Config {
-            let config = toMerge;
-        } else {
+            let toMerge = new Config(toMerge);
+        }
+
+        if unlikely !(typeof toMerge === "object" && toMerge instanceof Config) {
             throw new Exception("Invalid data type for merge.");
         }
 
         let source = this->toArray(),
-            target = config->toArray(),
+            target = toMerge->toArray(),
             result = this->internalMerge(source, target);
 
         this->clear();
@@ -216,6 +216,6 @@ class Config extends Collection
             let data = value;
         }
 
-        let this->data[element]  = data;
+        let this->data[element] = data;
     }
 }
