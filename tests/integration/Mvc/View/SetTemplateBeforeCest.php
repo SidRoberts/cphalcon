@@ -15,9 +15,6 @@ namespace Phalcon\Test\Integration\Mvc\View;
 
 use IntegrationTester;
 
-/**
- * Class SetTemplateBeforeCest
- */
 class SetTemplateBeforeCest
 {
     /**
@@ -29,6 +26,7 @@ class SetTemplateBeforeCest
     public function mvcViewSetTemplateBefore(IntegrationTester $I)
     {
         $I->wantToTest('Mvc\View - setTemplateBefore()');
+
         $I->skipTest('Need implementation');
     }
 }

@@ -146,17 +146,23 @@ interface ViewInterface extends ViewBaseInterface
 
     /**
      * Appends template after controller layout
-     *
-     * @param string|array templateAfter
      */
-    public function setTemplateAfter(templateAfter);
+    public function setTemplateAfter(string templateAfter);
+
+    /**
+     * Appends templates after controller layout
+     */
+    public function setTemplatesAfter(array templatesAfter);
 
     /**
      * Appends template before controller layout
-     *
-     * @param string|array templateBefore
      */
-    public function setTemplateBefore(templateBefore);
+    public function setTemplateBefore(string templateBefore);
+
+    /**
+     * Appends templates before controller layout
+     */
+    public function setTemplatesBefore(array templatesBefore);
 
     /**
      * Starts rendering process enabling the output buffering

@@ -783,15 +783,23 @@ class View extends Injectable implements ViewInterface, EventsAwareInterface
     }
 
     /**
-     * Sets a "template after" controller layout
+     * Sets a template after controller layout
      */
-    public function setTemplateAfter(var templateAfter) -> <View>
+    public function setTemplateAfter(string templateAfter) -> <View>
     {
-        if typeof templateAfter != "array" {
-            let this->templatesAfter = [templateAfter];
-        } else {
-            let this->templatesAfter = templateAfter;
-        }
+        return this->setTemplatesAfter(
+            [
+                templateAfter
+            ]
+        );
+    }
+
+    /**
+     * Sets the templates after controller layout
+     */
+    public function setTemplatesAfter(array templatesAfter) -> <View>
+    {
+        let this->templatesAfter = templatesAfter;
 
         return this;
     }
@@ -799,13 +807,21 @@ class View extends Injectable implements ViewInterface, EventsAwareInterface
     /**
      * Sets a template before the controller layout
      */
-    public function setTemplateBefore(var templateBefore) -> <View>
+    public function setTemplateBefore(string templateBefore) -> <View>
     {
-        if typeof templateBefore != "array" {
-            let this->templatesBefore = [templateBefore];
-        } else {
-            let this->templatesBefore = templateBefore;
-        }
+        return this->setTemplatesBefore(
+            [
+                templateBefore
+            ]
+        );
+    }
+
+    /**
+     * Sets the templates before the controller layout
+     */
+    public function setTemplatesBefore(array templatesBefore) -> <View>
+    {
+        let this->templatesBefore = templatesBefore;
 
         return this;
     }
